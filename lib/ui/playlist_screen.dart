@@ -21,17 +21,17 @@ class PlaylistScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(playlist.name),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white70),
+            icon: Icon(Icons.edit, color: Colors.white70),
             onPressed: () => _showRenameDialog(context, provider, playlist),
           ),
           IconButton(
-            icon: const Icon(Icons.add, color: AppTheme.accentColor1),
+            icon: Icon(Icons.add, color: AppTheme.accentColor1),
             onPressed: () => _showAddSongsDialog(context, provider, playlist),
           ),
         ],
@@ -41,17 +41,17 @@ class PlaylistScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.queue_music, size: 64, color: Colors.white24),
-                  const SizedBox(height: 16),
-                  const Text(
+                  Icon(Icons.queue_music, size: 64, color: Colors.white24),
+                  SizedBox(height: 16),
+                  Text(
                     'No songs in this playlist yet',
                     style: TextStyle(color: Colors.white54, fontSize: 16),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () => _showAddSongsDialog(context, provider, playlist),
-                    icon: const Icon(Icons.add, color: Colors.black),
-                    label: const Text('Add Songs', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.add, color: Colors.black),
+                    label: Text('Add Songs', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentColor1,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -74,15 +74,15 @@ class PlaylistScreen extends StatelessWidget {
                               provider.playSong(playlist.songs.first, playlist: playlist.songs);
                             }
                           },
-                          icon: const Icon(Icons.play_arrow, color: Colors.black),
-                          label: const Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.play_arrow, color: Colors.black),
+                          label: Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.accentColor1,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
@@ -91,8 +91,8 @@ class PlaylistScreen extends StatelessWidget {
                               provider.playSong(shuffled.first, playlist: shuffled);
                             }
                           },
-                          icon: const Icon(Icons.shuffle, color: AppTheme.accentColor1),
-                          label: const Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.shuffle, color: AppTheme.accentColor1),
+                          label: Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: AppTheme.accentColor1),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -125,12 +125,12 @@ class PlaylistScreen extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                              icon: Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
                               onPressed: () {
                                 provider.removeSongFromPlaylist(playlist.id, song);
                               },
                             ),
-                            const Icon(Icons.drag_handle, color: Colors.white38),
+                            Icon(Icons.drag_handle, color: Colors.white38),
                           ],
                         ),
                         onTap: () => provider.playSong(song, playlist: playlist.songs),
@@ -149,7 +149,7 @@ class PlaylistScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF282828),
-        title: const Text('Rename Playlist', style: TextStyle(color: Colors.white)),
+        title: Text('Rename Playlist', style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -164,7 +164,7 @@ class PlaylistScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child: Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () {
@@ -174,7 +174,7 @@ class PlaylistScreen extends StatelessWidget {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Save', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
+            child: Text('Save', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -290,7 +290,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                 decoration: InputDecoration(
                   hintText: 'Search songs to add...',
                   hintStyle: const TextStyle(color: Colors.white38),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                  prefixIcon: Icon(Icons.search, color: Colors.white38),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
                   border: OutlineInputBorder(
@@ -301,9 +301,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                 onSubmitted: (_) => _search(),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             if (_isSearching)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(16),
                 child: CircularProgressIndicator(color: AppTheme.accentColor1),
               ),
@@ -333,9 +333,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                     title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
                     subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
                     trailing: alreadyAdded
-                        ? const Icon(Icons.check_circle, color: AppTheme.accentColor1)
+                        ? Icon(Icons.check_circle, color: AppTheme.accentColor1)
                         : IconButton(
-                            icon: const Icon(Icons.add_circle_outline, color: Colors.white54),
+                            icon: Icon(Icons.add_circle_outline, color: Colors.white54),
                             onPressed: () {
                               provider.addSongToPlaylist(widget.playlistId, song);
                               setState(() {}); // refresh check marks
@@ -351,3 +351,5 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
     );
   }
 }
+
+

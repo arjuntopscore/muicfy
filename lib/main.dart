@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert';
+import 'dart:ui';
 
 import 'music_provider.dart';
+import 'admin_service.dart';
 import 'ui/theme.dart';
 import 'ui/home_tab.dart';
 import 'ui/search_tab.dart';
@@ -11,6 +15,8 @@ import 'ui/library_tab.dart';
 import 'ui/offline_folder_screen.dart';
 import 'ui/mini_player.dart';
 import 'ui/welcome_screen.dart';
+
+import 'theme_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +31,9 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => MusicProvider()),
+        ChangeNotifierProvider(create: (_) => AdminService()),
       ],
       child: MusicApp(showOnboarding: !onboardingComplete),
     ),
@@ -58,11 +66,18 @@ class _MusicAppState extends State<MusicApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    
     return MaterialApp(
-      title: 'musicfy',
+      title: 'NexTune',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeProvider.themeMode,
       scaffoldMessengerKey: scaffoldMessengerKey,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.trackpad},
+      ),
       home: _showOnboarding
           ? WelcomeScreen(onComplete: _onOnboardingComplete)
           : const RootScreen(),
@@ -104,30 +119,44 @@ class _RootScreenState extends State<RootScreen> {
       LibraryTab(onOfflineFolderTapped: _goToOfflineFolder),
     ];
 
+    final isDesktop = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-      body: Stack(
+      body: Row(
         children: [
-          // Main content
-          pages[_selectedIndex],
-          
-          // Persistent Mini Player overlay
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: MiniPlayer(),
+          if (isDesktop)
+            NavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onTabTapped,
+              labelType: NavigationRailLabelType.all,
+              destinations: const [
+                NavigationRailDestination(icon: Icon(CupertinoIcons.home), selectedIcon: Icon(CupertinoIcons.house_fill), label: Text('Home')),
+                NavigationRailDestination(icon: Icon(CupertinoIcons.search), selectedIcon: Icon(CupertinoIcons.search), label: Text('Search')),
+                NavigationRailDestination(icon: Icon(CupertinoIcons.music_albums), selectedIcon: Icon(CupertinoIcons.music_albums_fill), label: Text('Library')),
+              ],
+            ),
+          if (isDesktop) const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(child: pages[_selectedIndex]),
+                const MiniPlayer(),
+              ],
+            ),
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onTabTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_music_outlined), activeIcon: Icon(Icons.library_music), label: 'Library'),
-        ],
-      ),
+      bottomNavigationBar: isDesktop 
+        ? null 
+        : BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onTabTapped,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), activeIcon: Icon(CupertinoIcons.house_fill), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.search), activeIcon: Icon(CupertinoIcons.search), label: 'Search'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.music_albums), activeIcon: Icon(CupertinoIcons.music_albums_fill), label: 'Library'),
+            ],
+          ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
@@ -37,6 +38,15 @@ class MusicProvider extends ChangeNotifier {
   
   bool isLoadingLibrary = true;
 
+  // ── Sleep Timer ──
+  Timer? _sleepTimer;
+  Duration? sleepTimerRemaining;
+  Timer? _sleepCountdown;
+
+  // ── Made For You ──
+  List<Song> madeForYouMix = [];
+  bool isLoadingMix = false;
+
   MusicProvider() {
     _init();
     _configureAudioSession();
@@ -62,12 +72,17 @@ class MusicProvider extends ChangeNotifier {
         androidNotificationChannelName: 'Audio playback',
         androidNotificationIcon: 'mipmap/ic_launcher',
         androidShowNotificationBadge: true,
-        androidStopForegroundOnPause: false,
+        androidStopForegroundOnPause: true,
         notificationColor: Color(0xFF1DB954),
       ),
     );
     _audioHandler!.onSkipToNext = playNext;
     _audioHandler!.onSkipToPrevious = playPrevious;
+    _audioHandler!.onStop = () {
+      audioPlayer.stop();
+      currentSong = null;
+      notifyListeners();
+    };
   }
 
   /// Configure audio session for proper background playback and audio focus
@@ -90,6 +105,8 @@ class MusicProvider extends ChangeNotifier {
       androidWillPauseWhenDucked: false,
     ));
 
+    bool _wasPlayingBeforeInterruption = false;
+
     // Handle audio interruptions (phone calls, other apps, etc.)
     session.interruptionEventStream.listen((event) {
       if (event.begin) {
@@ -100,6 +117,7 @@ class MusicProvider extends ChangeNotifier {
             break;
           case AudioInterruptionType.pause:
           case AudioInterruptionType.unknown:
+            _wasPlayingBeforeInterruption = audioPlayer.playing;
             audioPlayer.pause();
             break;
         }
@@ -110,8 +128,10 @@ class MusicProvider extends ChangeNotifier {
             audioPlayer.setVolume(1.0);
             break;
           case AudioInterruptionType.pause:
-            // Resume playback after interruption ends
-            audioPlayer.play();
+            // Resume playback after interruption ends ONLY if it was playing before
+            if (_wasPlayingBeforeInterruption) {
+              audioPlayer.play();
+            }
             break;
           case AudioInterruptionType.unknown:
             break;
@@ -139,26 +159,38 @@ class MusicProvider extends ChangeNotifier {
   }
 
   Future<void> _loadTrendingSongs() async {
-    final results = await Future.wait([
-      _apiService.searchSongs('Anirudh Ravichander Tamil'),
-      _apiService.searchSongs('A.R. Rahman Tamil'),
-      _apiService.searchSongs('Jakes Bejoy Malayalam'),
-      _apiService.searchSongs('Sushin Shyam Malayalam'),
-    ]);
+    try {
+      final results = await Future.wait([
+        _apiService.searchSongs('Anirudh Ravichander Tamil'),
+        _apiService.searchSongs('A.R. Rahman Tamil'),
+        _apiService.searchSongs('Jakes Bejoy Malayalam'),
+        _apiService.searchSongs('Sushin Shyam Malayalam'),
+      ]);
 
-    // Combine and shuffle Tamil songs from Anirudh and A.R. Rahman
-    final List<Song> tamilSongs = [...results[0], ...results[1]];
-    tamilSongs.shuffle();
-    
-    // Combine and shuffle Malayalam songs from Jakes Bejoy and Sushin Shyam
-    final List<Song> malayalamSongs = [...results[2], ...results[3]];
-    malayalamSongs.shuffle();
+      // Combine and shuffle Tamil songs from Anirudh and A.R. Rahman
+      final List<Song> tamilSongs = [...results[0], ...results[1]];
+      tamilSongs.shuffle();
+      
+      // Combine and shuffle Malayalam songs from Jakes Bejoy and Sushin Shyam
+      final List<Song> malayalamSongs = [...results[2], ...results[3]];
+      malayalamSongs.shuffle();
 
-    // Keep top 15 to keep the horizontal list tidy
-    trendingTamil = tamilSongs.take(15).toList();
-    trendingMalayalam = malayalamSongs.take(15).toList();
-    
-    notifyListeners();
+      // Keep top 15 to keep the horizontal list tidy
+      trendingTamil = tamilSongs.take(15).toList();
+      trendingMalayalam = malayalamSongs.take(15).toList();
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading trending songs: $e');
+    }
+  }
+
+  /// Call this from the welcome screen to preload home screen data
+  /// while the user is reading the greeting page.
+  void preloadHomeData() {
+    // Fire both in parallel — don't await, let them complete in the background
+    _loadTrendingSongs();
+    loadTopSongs();
   }
 
   Future<void> loadUserName() async {
@@ -702,6 +734,15 @@ class MusicProvider extends ChangeNotifier {
         );
 
         await audioPlayer.setAudioSource(audioSource);
+        
+        // Update the notification MediaItem with the actual duration
+        // so the progress bar and time display work correctly.
+        final actualDuration = audioPlayer.duration;
+        if (actualDuration != null) {
+          final updatedMediaItem = mediaItem.copyWith(duration: actualDuration);
+          _audioHandler?.updateMediaItem(updatedMediaItem);
+        }
+        
         audioPlayer.play();
       }
     } catch (e) {
@@ -796,8 +837,138 @@ class MusicProvider extends ChangeNotifier {
     }
   }
 
+  // ── Sleep Timer ─────────────────────────────────────────────────────
+
+  void setSleepTimer(Duration duration) {
+    cancelSleepTimer();
+    sleepTimerRemaining = duration;
+    
+    // The main timer that actually stops playback
+    _sleepTimer = Timer(duration, () {
+      audioPlayer.pause();
+      sleepTimerRemaining = null;
+      _sleepCountdown?.cancel();
+      _sleepCountdown = null;
+      notifyListeners();
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('Sleep timer ended — goodnight! 🌙'),
+          backgroundColor: Color(0xFF282828),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    });
+
+    // A periodic countdown so the UI can show remaining time
+    _sleepCountdown = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (sleepTimerRemaining != null && sleepTimerRemaining!.inSeconds > 0) {
+        sleepTimerRemaining = sleepTimerRemaining! - const Duration(seconds: 1);
+        notifyListeners();
+      }
+    });
+
+    notifyListeners();
+  }
+
+  void cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepCountdown?.cancel();
+    _sleepCountdown = null;
+    sleepTimerRemaining = null;
+    notifyListeners();
+  }
+
+  bool get isSleepTimerActive => sleepTimerRemaining != null;
+
+  // ── Made For You Mix ────────────────────────────────────────────────
+
+  Future<void> generateMadeForYouMix() async {
+    if (isLoadingMix) return;
+    isLoadingMix = true;
+    notifyListeners();
+
+    try {
+      // Count artist frequency from playback history
+      final Map<String, int> artistCounts = {};
+      for (final event in playbackHistory) {
+        final artist = event.artist;
+        artistCounts[artist] = (artistCounts[artist] ?? 0) + 1;
+      }
+
+      // Also include favorites artists
+      for (final song in favorites) {
+        // Split comma-separated artists
+        for (final artist in song.artist.split(',')) {
+          final trimmed = artist.trim();
+          artistCounts[trimmed] = (artistCounts[trimmed] ?? 0) + 2; // weight favorites higher
+        }
+      }
+
+      // Sort by frequency, take top 5 artists
+      final sortedArtists = artistCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      
+      final topArtists = sortedArtists
+          .take(5)
+          .map((e) => e.key)
+          .where((a) => a != 'Unknown' && a != 'Local File')
+          .toList();
+
+      if (topArtists.isEmpty) {
+        // Fallback for new users
+        topArtists.addAll(['Anirudh', 'A.R. Rahman', 'Sushin Shyam']);
+      }
+
+      // Fetch songs for each top artist
+      final Set<String> seenIds = {};
+      final List<Song> mixSongs = [];
+
+      final futures = topArtists.map((artist) => _apiService.searchSongs(artist, limit: 10));
+      final results = await Future.wait(futures);
+
+      for (final songs in results) {
+        for (final song in songs) {
+          if (!seenIds.contains(song.id)) {
+            seenIds.add(song.id);
+            mixSongs.add(song);
+          }
+        }
+      }
+
+      mixSongs.shuffle();
+      madeForYouMix = mixSongs.take(30).toList();
+    } catch (e) {
+      debugPrint('Error generating mix: $e');
+    } finally {
+      isLoadingMix = false;
+      notifyListeners();
+    }
+  }
+
+  // ── Queue Management ────────────────────────────────────────────────
+
+  void removeFromQueue(int index) {
+    if (index < 0 || index >= currentPlaylist.length) return;
+    if (index == currentPlaylistIndex) return; // Can't remove currently playing
+    
+    currentPlaylist.removeAt(index);
+    // Adjust current index if needed
+    if (index < currentPlaylistIndex) {
+      currentPlaylistIndex--;
+    }
+    notifyListeners();
+  }
+
+  void playFromQueue(int index) {
+    if (index < 0 || index >= currentPlaylist.length) return;
+    playSong(currentPlaylist[index]);
+  }
+
   @override
   void dispose() {
+    _sleepTimer?.cancel();
+    _sleepCountdown?.cancel();
     audioPlayer.dispose();
     super.dispose();
   }

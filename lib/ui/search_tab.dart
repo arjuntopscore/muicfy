@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../music_provider.dart';
+import '../admin_service.dart';
 import '../api_service.dart';
 import '../song_model.dart';
 import 'theme.dart';
@@ -72,8 +73,30 @@ class _SearchTabState extends State<SearchTab> {
 
     final results = await _apiService.searchSongs(query);
 
+    // Merge catalog songs that match the query
+    final adminService = context.read<AdminService>();
+    final queryLower = query.toLowerCase();
+    final catalogMatches = adminService.catalogSongs.where((song) {
+      return song.title.toLowerCase().contains(queryLower) ||
+             song.artist.toLowerCase().contains(queryLower) ||
+             song.language.toLowerCase().contains(queryLower);
+    }).toList();
+
+    // Add catalog matches to the top, avoiding duplicates
+    final existingIds = results.map((s) => s.id).toSet();
+    final mergedResults = [
+      ...catalogMatches.where((s) => !existingIds.contains(s.id)),
+      ...results,
+    ];
+
     // Prioritize Tamil and Malayalam songs
-    results.sort((a, b) {
+    mergedResults.sort((a, b) {
+      // Catalog songs always come first
+      final aIsCatalog = a.id.startsWith('catalog_');
+      final bIsCatalog = b.id.startsWith('catalog_');
+      if (aIsCatalog && !bIsCatalog) return -1;
+      if (!aIsCatalog && bIsCatalog) return 1;
+
       bool aIsPriority = a.language == 'tamil' || a.language == 'malayalam';
       bool bIsPriority = b.language == 'tamil' || b.language == 'malayalam';
       if (aIsPriority && !bIsPriority) return -1;
@@ -83,7 +106,7 @@ class _SearchTabState extends State<SearchTab> {
 
     if (mounted) {
       // Check if this is a library-style search
-      if (_isLibrarySearch(query) && results.isNotEmpty) {
+      if (_isLibrarySearch(query) && mergedResults.isNotEmpty) {
         setState(() {
           _isSearching = false;
           _hasSearched = true;
@@ -94,13 +117,13 @@ class _SearchTabState extends State<SearchTab> {
           MaterialPageRoute(
             builder: (_) => SearchLibraryScreen(
               query: query,
-              initialResults: results,
+              initialResults: mergedResults,
             ),
           ),
         );
       } else {
         setState(() {
-          _searchResults = results;
+          _searchResults = mergedResults;
           _isSearching = false;
           _hasSearched = true;
         });
@@ -129,24 +152,25 @@ class _SearchTabState extends State<SearchTab> {
     return SafeArea(
       child: Column(
         children: [
+          SizedBox(height: 54),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: TextField(
                 controller: _searchController,
-                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   hintText: 'What do you want to listen to?',
-                  hintStyle: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+                  hintStyle: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
                   border: InputBorder.none,
-                  prefixIcon: const Icon(Icons.search, color: Colors.black, size: 28),
+                  prefixIcon: Icon(Icons.search, color: Colors.black, size: 28),
                   suffixIcon: _searchController.text.isNotEmpty 
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.black),
+                          icon: Icon(Icons.clear, color: Colors.black),
                           onPressed: () {
                             _searchController.clear();
                             _onSearchChanged('');
@@ -179,15 +203,15 @@ class _SearchTabState extends State<SearchTab> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.library_music, color: AppTheme.accentColor1, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.library_music, color: AppTheme.accentColor1, size: 20),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Browse "${_searchController.text}" as a library',
-                          style: const TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.w500, fontSize: 13),
+                          style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.w500, fontSize: 13),
                         ),
                       ),
-                      const Icon(Icons.arrow_forward_ios, color: AppTheme.accentColor1, size: 14),
+                      Icon(Icons.arrow_forward_ios, color: AppTheme.accentColor1, size: 14),
                     ],
                   ),
                 ),
@@ -210,15 +234,15 @@ class _SearchTabState extends State<SearchTab> {
                     ? (provider.recentSearches.isEmpty
                         ? Center(
                             child: _hasSearched 
-                                ? const Text('No results for that one. Try a different search?', style: TextStyle(color: Colors.white70), textAlign: TextAlign.center)
-                                : const Text('Search for a song, artist, or album', style: TextStyle(color: Color(0xFFB3B3B3)), textAlign: TextAlign.center),
+                                ? Text('No results for that one. Try a different search?', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.70)), textAlign: TextAlign.center)
+                                : Text('Search for a song, artist, or album', style: TextStyle(color: Color(0xFFB3B3B3)), textAlign: TextAlign.center),
                           )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Text('Recent Searches', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                child: Text('Recent Searches', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold)),
                               ),
                               Expanded(
                                 child: ListView.builder(
@@ -236,7 +260,7 @@ class _SearchTabState extends State<SearchTab> {
                                       title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                                       subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis),
                                       trailing: IconButton(
-                                        icon: const Icon(Icons.close, color: Colors.white54),
+                                        icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54)),
                                         onPressed: () => provider.removeFromRecentSearches(song),
                                       ),
                                       onTap: () {
@@ -276,3 +300,7 @@ class _SearchTabState extends State<SearchTab> {
     );
   }
 }
+
+
+
+

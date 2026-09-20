@@ -8,9 +8,9 @@ class ApiService {
   
   static const String baseUrl = 'https://jiosaavn-api2.arjunktp88.workers.dev';
 
-  Future<List<Song>> searchSongs(String query, {int limit = 10}) async {
+  Future<List<Song>> searchSongs(String query, {int limit = 10, int page = 1}) async {
     try {
-      final url = Uri.parse('$baseUrl/api/search/songs?query=${Uri.encodeComponent(query)}&limit=$limit');
+      final url = Uri.parse('$baseUrl/api/search/songs?query=${Uri.encodeComponent(query)}&limit=$limit&page=$page');
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {

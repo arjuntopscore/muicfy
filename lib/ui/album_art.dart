@@ -34,18 +34,21 @@ class AlbumArt extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: Theme.of(context).cardColor,
         borderRadius: borderRadius,
-        image: imageProvider != null
-            ? DecorationImage(
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: imageProvider == null
+            ? Icon(Icons.music_note, color: Colors.white54, size: iconSize)
+            : Image(
                 image: imageProvider,
                 fit: BoxFit.cover,
-              )
-            : null,
+                width: width,
+                height: height,
+              ),
       ),
-      child: imageProvider == null
-          ? Icon(Icons.music_note, color: Colors.white54, size: iconSize)
-          : null,
     );
   }
 }
+

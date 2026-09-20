@@ -1,11 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import '../music_provider.dart';
 import '../song_model.dart';
 import 'theme.dart';
 import 'album_art.dart';
+import 'queue_screen.dart';
+import 'lyrics_sheet.dart';
+import 'car_mode_screen.dart';
 
 class PlayerScreen extends StatelessWidget {
   const PlayerScreen({super.key});
@@ -41,10 +45,10 @@ class PlayerScreen extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.5),
-                      Colors.black.withOpacity(0.2),
-                      AppTheme.bgColor.withOpacity(0.8),
-                      AppTheme.bgColor,
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.black.withValues(alpha: 0.2),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      Theme.of(context).scaffoldBackgroundColor,
                     ],
                     stops: const [0.0, 0.3, 0.75, 1.0],
                   ),
@@ -55,38 +59,45 @@ class PlayerScreen extends StatelessWidget {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
+                return Center(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        children: [
-                          _buildAppBar(context),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                            child: Hero(
-                              tag: 'album_art_${song.id}',
-                              child: AspectRatio(
-                                aspectRatio: 1,
-                                child: AlbumArt(
-                                  song: song,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  borderRadius: BorderRadius.circular(12),
-                                  iconSize: 80,
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            children: [
+                              _buildAppBar(context),
+                              SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: Hero(
+                                    tag: 'album_art_${song.id}',
+                                    child: AlbumArt(
+                                      song: song,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      borderRadius: BorderRadius.circular(12),
+                                      iconSize: 80,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                              const Spacer(),
+                              _buildSongInfo(context, song),
+                              _buildProgressBar(provider.audioPlayer),
+                              _buildControls(provider),
+                              SizedBox(height: 8),
+                              _buildExtraActions(context, provider, song),
+                              SizedBox(height: 20),
+                            ],
                           ),
-                          const Spacer(),
-                          _buildSongInfo(context, song),
-                          _buildProgressBar(provider.audioPlayer),
-                          _buildControls(provider),
-                          const SizedBox(height: 30),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -108,13 +119,13 @@ class PlayerScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.keyboard_arrow_down, size: 32),
+            icon: Icon(Icons.keyboard_arrow_down_rounded, size: 36),
             onPressed: () => Navigator.pop(context),
           ),
           Text('Now Playing', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14)),
           IconButton(
             icon: Icon(
-              song != null && song.isLocal ? Icons.offline_pin : Icons.download,
+              song != null && song.isLocal ? Icons.offline_pin_rounded : CupertinoIcons.arrow_down_circle,
               color: song != null && song.isLocal ? AppTheme.accentColor1 : Colors.white,
             ),
             onPressed: song != null && !song.isLocal ? () => provider.downloadSong(song, context) : null,
@@ -123,8 +134,6 @@ class PlayerScreen extends StatelessWidget {
       ),
     );
   }
-
-
 
   Widget _buildSongInfo(BuildContext context, Song song) {
     final provider = context.watch<MusicProvider>();
@@ -147,7 +156,7 @@ class PlayerScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   song.artist,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -165,7 +174,7 @@ class PlayerScreen extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
               child: Icon(
-                isFav ? Icons.favorite : Icons.favorite_border,
+                isFav ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
                 key: ValueKey<bool>(isFav),
                 color: isFav ? AppTheme.accentColor1 : Colors.white,
                 size: 28,
@@ -252,18 +261,18 @@ class PlayerScreen extends StatelessWidget {
       children: [
         IconButton(
           icon: Icon(
-            Icons.shuffle, 
+            Icons.shuffle_rounded, 
             color: provider.isShuffleEnabled ? AppTheme.accentColor1 : Colors.white, 
             size: 28
           ),
           onPressed: provider.toggleShuffle,
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         IconButton(
-          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
+          icon: Icon(Icons.skip_previous_rounded, color: Colors.white, size: 38),
           onPressed: provider.playPrevious,
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         StreamBuilder<PlayerState>(
           stream: provider.audioPlayer.playerStateStream,
           builder: (context, snapshot) {
@@ -276,13 +285,13 @@ class PlayerScreen extends StatelessWidget {
             if (provider.isResolvingAudio || 
                 processingState == ProcessingState.loading ||
                 processingState == ProcessingState.buffering) {
-              centerButton = const CircularProgressIndicator(color: AppTheme.accentColor1);
+              centerButton = CircularProgressIndicator(color: AppTheme.accentColor1);
             } else if (playing != true) {
-              centerButton = _buildPlayButton(Icons.play_arrow, provider.audioPlayer.play);
+              centerButton = _buildPlayButton(Icons.play_arrow_rounded, provider.audioPlayer.play);
             } else if (processingState != ProcessingState.completed) {
-              centerButton = _buildPlayButton(Icons.pause, provider.audioPlayer.pause);
+              centerButton = _buildPlayButton(Icons.pause_rounded, provider.audioPlayer.pause);
             } else {
-              centerButton = _buildPlayButton(Icons.replay, () => provider.audioPlayer.seek(Duration.zero));
+              centerButton = _buildPlayButton(Icons.replay_rounded, () => provider.audioPlayer.seek(Duration.zero));
             }
 
             return SizedBox(
@@ -292,15 +301,15 @@ class PlayerScreen extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         IconButton(
-          icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
+          icon: Icon(Icons.skip_next_rounded, color: Colors.white, size: 38),
           onPressed: provider.playNext,
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         IconButton(
           icon: Icon(
-            provider.repeatMode == PlaybackRepeatMode.one ? Icons.repeat_one : Icons.repeat, 
+            provider.repeatMode == PlaybackRepeatMode.one ? Icons.repeat_one_rounded : Icons.repeat_rounded, 
             color: provider.repeatMode != PlaybackRepeatMode.off ? AppTheme.accentColor1 : Colors.white, 
             size: 28
           ),
@@ -310,11 +319,172 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 
+  /// Extra action buttons row: Lyrics, Queue, Sleep Timer, Car Mode
+  Widget _buildExtraActions(BuildContext context, MusicProvider provider, Song song) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Lyrics
+          _buildActionButton(
+            icon: Icons.lyrics_rounded,
+            label: 'Lyrics',
+            onTap: () => LyricsSheet.show(context, song),
+          ),
+          // Queue
+          _buildActionButton(
+            icon: Icons.queue_music_rounded,
+            label: 'Queue',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QueueScreen()),
+              );
+            },
+          ),
+          // Sleep Timer
+          _buildActionButton(
+            icon: provider.isSleepTimerActive ? CupertinoIcons.timer_fill : CupertinoIcons.timer,
+            label: provider.isSleepTimerActive
+                ? '${provider.sleepTimerRemaining!.inMinutes}m'
+                : 'Timer',
+            isActive: provider.isSleepTimerActive,
+            onTap: () => _showSleepTimerSheet(context, provider),
+          ),
+          // Car Mode
+          _buildActionButton(
+            icon: CupertinoIcons.car_detailed,
+            label: 'Car',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CarModeScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isActive = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: isActive ? AppTheme.accentColor1 : Colors.white54, size: 22),
+          SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? AppTheme.accentColor1 : Colors.white54,
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSleepTimerSheet(BuildContext context, MusicProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+              SizedBox(height: 20),
+              Text('Sleep Timer', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4),
+              Text(
+                provider.isSleepTimerActive
+                    ? 'Music will stop in ${provider.sleepTimerRemaining!.inMinutes} min ${provider.sleepTimerRemaining!.inSeconds % 60} sec'
+                    : 'Stop music after a set time',
+                style: const TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+              SizedBox(height: 20),
+
+              // Timer options
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _timerOption(ctx, provider, '15 min', const Duration(minutes: 15)),
+                  _timerOption(ctx, provider, '30 min', const Duration(minutes: 30)),
+                  _timerOption(ctx, provider, '45 min', const Duration(minutes: 45)),
+                  _timerOption(ctx, provider, '1 hour', const Duration(hours: 1)),
+                  _timerOption(ctx, provider, '1.5 hours', const Duration(minutes: 90)),
+                  _timerOption(ctx, provider, '2 hours', const Duration(hours: 2)),
+                ],
+              ),
+
+              if (provider.isSleepTimerActive) ...[
+                SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () {
+                    provider.cancelSleepTimer();
+                    Navigator.pop(ctx);
+                  },
+                  icon: Icon(Icons.cancel, color: Colors.redAccent),
+                  label: Text('Cancel Timer', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+                ),
+              ],
+              SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _timerOption(BuildContext ctx, MusicProvider provider, String label, Duration duration) {
+    return GestureDetector(
+      onTap: () {
+        provider.setSleepTimer(duration);
+        Navigator.pop(ctx);
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Sleep timer set for $label 🌙'),
+            backgroundColor: const Color(0xFF282828),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF282828),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+      ),
+    );
+  }
+
   Widget _buildPlayButton(IconData icon, VoidCallback onPressed) {
     return Container(
       width: 64,
       height: 64,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: AppTheme.accentColor1,
       ),
@@ -325,3 +495,6 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 }
+
+
+

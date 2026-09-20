@@ -116,7 +116,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
     final provider = context.watch<MusicProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -142,13 +142,13 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       Icon(
                         _getIconForQuery(),
                         size: 60,
                         color: Colors.white.withOpacity(0.3),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         '${_songs.length} songs',
                         style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
@@ -171,8 +171,8 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                       onPressed: _songs.isNotEmpty
                           ? () => provider.playSong(_songs.first, playlist: _songs)
                           : null,
-                      icon: const Icon(Icons.play_arrow, color: Colors.black),
-                      label: const Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                      icon: Icon(Icons.play_arrow, color: Colors.black),
+                      label: Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.accentColor1,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -180,7 +180,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _songs.isNotEmpty
@@ -189,8 +189,8 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                               provider.playSong(shuffled.first, playlist: shuffled);
                             }
                           : null,
-                      icon: const Icon(Icons.shuffle, color: AppTheme.accentColor1),
-                      label: const Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
+                      icon: Icon(Icons.shuffle, color: AppTheme.accentColor1),
+                      label: Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppTheme.accentColor1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -218,8 +218,8 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.playlist_add, color: Colors.white70),
-                label: const Text('Save as Playlist', style: TextStyle(color: Colors.white70)),
+                icon: Icon(Icons.playlist_add, color: Colors.white70),
+                label: Text('Save as Playlist', style: TextStyle(color: Colors.white70)),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.white24),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -228,7 +228,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
             ),
           ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
+          SliverToBoxAdapter(child: SizedBox(height: 8)),
 
           // Songs list
           SliverList(
@@ -248,7 +248,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                           style: const TextStyle(color: Colors.white38, fontSize: 14),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       AlbumArt(
                         song: song,
                         width: 48,
@@ -260,7 +260,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis),
                   trailing: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white54),
+                    icon: Icon(Icons.more_vert, color: Colors.white54),
                     color: const Color(0xFF282828),
                     onSelected: (value) {
                       if (value == 'favorite') {
@@ -279,7 +279,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                               color: provider.isFavorite(song) ? AppTheme.accentColor1 : Colors.white70,
                               size: 20,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               provider.isFavorite(song) ? 'Remove from Favorites' : 'Add to Favorites',
                               style: const TextStyle(color: Colors.white),
@@ -311,14 +311,14 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
 
           // Loading more indicator
           if (_isLoadingMore)
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(child: CircularProgressIndicator(color: AppTheme.accentColor1)),
               ),
             ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -364,7 +364,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16),
             child: Text('Add to Playlist', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
@@ -376,7 +376,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                     borderRadius: BorderRadius.circular(8),
                     color: AppTheme.accentColor1.withOpacity(0.2),
                   ),
-                  child: const Icon(Icons.queue_music, color: AppTheme.accentColor1),
+                  child: Icon(Icons.queue_music, color: AppTheme.accentColor1),
                 ),
                 title: Text(p.name, style: const TextStyle(color: Colors.white)),
                 subtitle: Text('${p.songs.length} songs', style: const TextStyle(color: Colors.white54, fontSize: 12)),
@@ -392,9 +392,12 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   );
                 },
               )),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
         ],
       ),
     );
   }
 }
+
+
+

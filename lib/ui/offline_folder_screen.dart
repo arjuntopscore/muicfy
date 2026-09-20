@@ -14,10 +14,10 @@ class OfflineFolderScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offline Folder'),
+        title: Text('Offline Folder'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             tooltip: 'Upload Music',
             onPressed: () => provider.pickLocalAudio(context),
           )
@@ -28,14 +28,14 @@ class OfflineFolderScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.music_off, size: 64, color: Colors.white24),
-                  const SizedBox(height: 16),
-                  const Text('Nothing here yet — add some songs to get started', style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 16),
+                  Icon(Icons.music_off, size: 64, color: Colors.white24),
+                  SizedBox(height: 16),
+                  Text('Nothing here yet — add some songs to get started', style: TextStyle(color: Colors.white70)),
+                  SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => provider.pickLocalAudio(context),
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Upload Music'),
+                    icon: Icon(Icons.upload_file),
+                    label: Text('Upload Music'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentColor1,
                       foregroundColor: Colors.white,
@@ -60,7 +60,7 @@ class OfflineFolderScreen extends StatelessWidget {
                   title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    icon: Icon(Icons.delete, color: Colors.redAccent),
                     onPressed: () => _showDeleteDialog(context, provider, song),
                   ),
                   onTap: () => provider.playSong(song, playlist: songs),
@@ -74,23 +74,25 @@ class OfflineFolderScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
-        title: const Text('Remove from Your Library?'),
+        backgroundColor: Theme.of(context).cardColor,
+        title: Text('Remove from Your Library?'),
         content: Text('Are you sure you want to remove "${song.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+            child: Text('Cancel', style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
               provider.deleteLocalSong(song);
               Navigator.pop(ctx);
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
+            child: Text('Remove', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
     );
   }
 }
+
+

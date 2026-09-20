@@ -14,9 +14,9 @@ class FavoritesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favorites'),
+        title: Text('Favorites'),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF1DB954), Color(0xFF121212)],
               begin: Alignment.topCenter,
@@ -34,17 +34,17 @@ class FavoritesScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.surfaceColor.withOpacity(0.5),
+                      color: Theme.of(context).cardColor.withOpacity(0.5),
                     ),
-                    child: const Icon(Icons.favorite_border, size: 64, color: Colors.white24),
+                    child: Icon(Icons.favorite_border, size: 64, color: Colors.white24),
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
+                  SizedBox(height: 24),
+                  Text(
                     'No favorites yet',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Tap the heart icon on any song\nto add it to your favorites',
                     style: TextStyle(color: Colors.white54, fontSize: 14),
                     textAlign: TextAlign.center,
@@ -71,8 +71,8 @@ class FavoritesScreen extends StatelessWidget {
                             provider.playSong(shuffled.first, playlist: shuffled);
                           }
                         },
-                        icon: const Icon(Icons.shuffle, size: 18),
-                        label: const Text('Shuffle Play'),
+                        icon: Icon(Icons.shuffle, size: 18),
+                        label: Text('Shuffle Play'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentColor1,
                           foregroundColor: Colors.black,
@@ -100,7 +100,7 @@ class FavoritesScreen extends StatelessWidget {
                         title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                         subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis),
                         trailing: IconButton(
-                          icon: const Icon(Icons.favorite, color: AppTheme.accentColor1),
+                          icon: Icon(Icons.favorite, color: AppTheme.accentColor1),
                           onPressed: () => provider.toggleFavorite(song),
                         ),
                         onTap: () => provider.playSong(song, playlist: songs),
@@ -113,3 +113,6 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 }
+
+
+

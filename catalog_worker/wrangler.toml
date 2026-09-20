@@ -1,0 +1,13 @@
+name = "music-catalog"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# KV Namespace binding — replace the id after creating it in Cloudflare dashboard
+[[kv_namespaces]]
+binding = "CATALOG_KV"
+id = "YOUR_KV_NAMESPACE_ID_HERE"
+
+# Admin PIN — set this via: npx wrangler secret put ADMIN_PIN
+# Or set it in the Cloudflare dashboard under Worker Settings > Variables
+[vars]
+# ADMIN_PIN is set as a secret, not here

@@ -45,9 +45,9 @@ class StatsScreen extends StatelessWidget {
     var topTracks = sortedTracks.take(10).toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Your Music Wrapped', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Your Music Wrapped', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -65,15 +65,15 @@ class StatsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTotalTimeCard(totalTimeStr),
-                  const SizedBox(height: 32),
-                  const Text('Top Artists', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 32),
+                  Text('Top Artists', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                  SizedBox(height: 24),
                   _buildArtistsChart(topArtists),
-                  const SizedBox(height: 32),
-                  const Text('Most Played Tracks', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 32),
+                  Text('Most Played Tracks', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                  SizedBox(height: 16),
                   _buildTopTracksList(topTracks, trackDetails),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                 ],
               ),
             ),
@@ -110,10 +110,10 @@ class StatsScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.timer_rounded, color: Colors.white, size: 40),
-          const SizedBox(height: 16),
-          const Text('Total Listening Time', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          Icon(Icons.timer_rounded, color: Colors.white, size: 40),
+          SizedBox(height: 16),
+          Text('Total Listening Time', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
+          SizedBox(height: 8),
           Text(totalTimeStr, style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
         ],
       ),
@@ -246,3 +246,5 @@ class StatsScreen extends StatelessWidget {
     );
   }
 }
+
+

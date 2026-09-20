@@ -46,13 +46,13 @@ class _ArtistScreenState extends State<ArtistScreen> {
     final provider = context.watch<MusicProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 250,
             pinned: true,
-            backgroundColor: AppTheme.bgColor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.artistName,
@@ -68,10 +68,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
                 },
                 blendMode: BlendMode.dstIn,
                 child: Image.network(
-                  widget.artistImageUrl,
+                  widget.artistImageUrl.replaceAll('150x150', '1000x1000').replaceAll('500x500', '1000x1000'),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return Container(color: AppTheme.surfaceColor);
+                    return Container(color: Theme.of(context).cardColor);
                   },
                 ),
               ),
@@ -133,7 +133,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                             ),
                             onPressed: () => provider.toggleFavorite(song),
                           ),
-                          const Icon(Icons.more_vert, color: Colors.white54),
+                          Icon(Icons.more_vert, color: Colors.white54),
                         ],
                       ),
                       onTap: () => provider.playSong(song, playlist: _artistSongs),
@@ -148,3 +148,5 @@ class _ArtistScreenState extends State<ArtistScreen> {
     );
   }
 }
+
+

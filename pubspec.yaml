@@ -46,6 +46,10 @@ dependencies:
   permission_handler: ^11.3.1
   path_provider: ^2.1.6
   fl_chart: ^1.2.0
+  spotify: ^0.16.1
+  flutter_web_auth_2: ^5.0.3
+  just_audio_windows: ^0.2.3
+  flutter_overlay_window: ^0.5.0
 
 dev_dependencies:
   flutter_test:
@@ -104,4 +108,8 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/app_icon.jpg"
+  windows:
+    generate: true
+    image_path: "assets/app_icon.png"
+    icon_size: 256
+  image_path: "assets/app_icon.png"

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../music_provider.dart';
 import 'theme.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -29,11 +31,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
+    // Close the keyboard
+    FocusScope.of(context).unfocus();
+
     setState(() => _userName = name);
 
     // Save the username
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
+
+    // Preload trending songs & top songs while the user reads the
+    // greeting page. By the time they tap "Let's Go", data is ready.
+    if (mounted) {
+      final provider = context.read<MusicProvider>();
+      provider.userName = name;
+      provider.preloadHomeData();
+    }
 
     _pageController.nextPage(
       duration: const Duration(milliseconds: 500),
@@ -50,7 +63,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: false,
       body: PageView(
         controller: _pageController,
@@ -68,13 +81,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildNamePage() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             Color(0xFF1A3A2A),
-            AppTheme.bgColor,
+            Theme.of(context).scaffoldBackgroundColor,
             Color(0xFF0A0A0A),
           ],
           stops: [0.0, 0.5, 1.0],
@@ -93,7 +106,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  SizedBox(height: 60),
 
               // Logo / Icon
               Container(
@@ -118,10 +131,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.music_note_rounded, color: Colors.black, size: 40),
+                child: Icon(Icons.music_note_rounded, color: Colors.black, size: 40),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
 
               // Title
               Text(
@@ -132,13 +145,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   color: Colors.white70,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [AppTheme.accentColor1, AppTheme.accentColor2, Color(0xFF4ADE80)],
                 ).createShader(bounds),
                 child: Text(
-                  'musicfy',
+                  'NexTune',
                   style: GoogleFonts.montserrat(
                     fontSize: 48,
                     fontWeight: FontWeight.w800,
@@ -148,7 +161,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 48),
+              SizedBox(height: 48),
 
               // Subtitle
               Text(
@@ -159,7 +172,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 "Enter your name to personalise your experience",
                 style: GoogleFonts.montserrat(
@@ -168,13 +181,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              SizedBox(height: 28),
 
               // Name input field
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: AppTheme.surfaceColor,
+                  color: Theme.of(context).cardColor,
                   border: Border.all(
                     color: AppTheme.accentColor1.withValues(alpha: 0.3),
                     width: 1.5,
@@ -195,7 +208,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                    prefixIcon: const Padding(
+                    prefixIcon: Padding(
                       padding: EdgeInsets.only(left: 16, right: 8),
                       child: Icon(Icons.person_outline_rounded, color: AppTheme.accentColor1, size: 24),
                     ),
@@ -205,7 +218,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
 
               // Arrow button
               Align(
@@ -230,7 +243,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 30),
+                    child: Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 30),
                   ),
                 ),
               ),
@@ -239,7 +252,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               // Page indicator
               _buildPageIndicator(),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
             ],
           ),
             ),
@@ -253,7 +266,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildGreetingPage() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -261,7 +274,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             Color(0xFF1DB954),
             Color(0xFF14843C),
             Color(0xFF0D1B12),
-            AppTheme.bgColor,
+            Theme.of(context).scaffoldBackgroundColor,
           ],
           stops: [0.0, 0.25, 0.55, 1.0],
         ),
@@ -290,7 +303,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   color: Colors.white70,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 '$_userName! 👋',
                 style: GoogleFonts.montserrat(
@@ -300,7 +313,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
 
               // Introduction
               Container(
@@ -323,9 +336,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             shape: BoxShape.circle,
                             color: AppTheme.accentColor1.withValues(alpha: 0.2),
                           ),
-                          child: const Icon(Icons.waving_hand_rounded, color: AppTheme.accentColor1, size: 20),
+                          child: Icon(Icons.waving_hand_rounded, color: AppTheme.accentColor1, size: 20),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Text(
                           'From Arjun',
                           style: GoogleFonts.montserrat(
@@ -336,9 +349,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Text(
-                      "I'm Arjun, and I built musicfy just for music lovers like you. "
+                      "I'm Arjun, and I built NexTune just for music lovers like you. "
                       "This is your personal music space — stream songs, save your favorites with a single tap, "
                       "download tracks for offline playback, and track your listening habits with your Music Wrapped dashboard.",
                       style: GoogleFonts.montserrat(
@@ -351,15 +364,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // Feature highlights
               _buildFeatureRow(Icons.search_rounded, 'Search & stream millions of songs'),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               _buildFeatureRow(Icons.download_rounded, 'Download songs for offline playback'),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               _buildFeatureRow(Icons.bar_chart_rounded, 'Track stats with Music Wrapped dashboard'),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               _buildFeatureRow(Icons.favorite_rounded, 'Save favorites & upload local music'),
 
               const Spacer(flex: 2),
@@ -389,18 +402,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_rounded, size: 22),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 22),
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Page indicator
               _buildPageIndicator(),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
             ],
           ),
             ),
@@ -422,7 +435,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           child: Icon(icon, color: AppTheme.accentColor1, size: 20),
         ),
-        const SizedBox(width: 14),
+        SizedBox(width: 14),
         Expanded(
           child: Text(
             text,
@@ -456,3 +469,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 }
+
+
+
+
