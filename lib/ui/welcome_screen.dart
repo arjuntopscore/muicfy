@@ -142,7 +142,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white70,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 4),
@@ -155,7 +155,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   style: GoogleFonts.montserrat(
                     fontSize: 48,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     letterSpacing: -1,
                   ),
                 ),
@@ -169,7 +169,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               SizedBox(height: 8),
@@ -196,14 +196,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: TextField(
                   controller: _nameController,
                   style: GoogleFonts.montserrat(
-                    color: Colors.white,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Your name',
                     hintStyle: GoogleFonts.montserrat(
-                      color: Colors.white30,
+                      color: Theme.of(context).dividerColor.withOpacity(0.3),
                       fontSize: 18,
                     ),
                     border: InputBorder.none,
@@ -300,7 +300,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 22,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white70,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 4),
@@ -309,7 +309,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 40,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
 
@@ -322,7 +322,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   borderRadius: BorderRadius.circular(20),
                   color: Colors.black.withValues(alpha: 0.35),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.08) ?? Colors.transparent,
                   ),
                 ),
                 child: Column(
@@ -357,7 +357,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         height: 1.6,
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.85) ?? Colors.transparent,
                       ),
                     ),
                   ],
@@ -384,7 +384,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: ElevatedButton(
                   onPressed: _finishOnboarding,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).textTheme.bodyLarge?.color,
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -442,7 +442,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.9) ?? Colors.transparent,
             ),
           ),
         ),
@@ -462,13 +462,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           height: 8,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            color: isActive ? AppTheme.accentColor1 : Colors.white24,
+            color: isActive ? AppTheme.accentColor1 : Theme.of(context).dividerColor.withOpacity(0.24),
           ),
         );
       }),
     );
   }
 }
+
+
+
+
 
 
 

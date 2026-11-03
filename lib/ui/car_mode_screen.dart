@@ -7,7 +7,7 @@ import 'theme.dart';
 import 'album_art.dart';
 
 class CarModeScreen extends StatefulWidget {
-  const CarModeScreen({super.key});
+  CarModeScreen({super.key});
 
   @override
   State<CarModeScreen> createState() => _CarModeScreenState();
@@ -54,7 +54,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
     final song = provider.currentSong;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000), // Pure black for AMOLED
+      backgroundColor: Color(0xFF000000), // Pure black for AMOLED
       body: SafeArea(
         child: Stack(
           children: [
@@ -83,8 +83,8 @@ class _CarModeScreenState extends State<CarModeScreen> {
                         children: [
                           Text(
                             song.title,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
                             ),
@@ -94,14 +94,14 @@ class _CarModeScreenState extends State<CarModeScreen> {
                           SizedBox(height: 8),
                           Text(
                             song.artist,
-                            style: const TextStyle(
-                              color: Colors.white70,
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                               fontSize: 18,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Spacer(),
+                          Spacer(),
                           // Progress Bar
                           StreamBuilder<Duration>(
                             stream: provider.audioPlayer.positionStream,
@@ -120,8 +120,8 @@ class _CarModeScreenState extends State<CarModeScreen> {
                                   SliderTheme(
                                     data: SliderThemeData(
                                       trackHeight: 12, // Extra large for car mode
-                                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-                                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+                                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12),
+                                      overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
                                       activeTrackColor: AppTheme.accentColor1,
                                       inactiveTrackColor: Theme.of(context).cardColor,
                                       thumbColor: AppTheme.accentColor1,
@@ -141,9 +141,9 @@ class _CarModeScreenState extends State<CarModeScreen> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(_formatDuration(position),
-                                            style: const TextStyle(color: Colors.white54, fontSize: 16)),
+                                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 16)),
                                         Text(_formatDuration(duration),
-                                            style: const TextStyle(color: Colors.white54, fontSize: 16)),
+                                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 16)),
                                       ],
                                     ),
                                   ),
@@ -165,9 +165,9 @@ class _CarModeScreenState extends State<CarModeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.skip_previous, color: Colors.white),
+                            icon: Icon(Icons.skip_previous, color: Theme.of(context).textTheme.bodyLarge?.color),
                             iconSize: 48,
-                            constraints: const BoxConstraints(minWidth: 72, minHeight: 72),
+                            constraints: BoxConstraints(minWidth: 72, minHeight: 72),
                             onPressed: () => provider.playPrevious(),
                           ),
                           SizedBox(height: 8),
@@ -198,7 +198,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
                               } else if (playing == true) {
                                 return InkWell(
                                   onTap: () => provider.audioPlayer.pause(),
-                                  customBorder: const CircleBorder(),
+                                  customBorder: CircleBorder(),
                                   child: Container(
                                     width: 80,
                                     height: 80,
@@ -212,7 +212,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
                               } else {
                                 return InkWell(
                                   onTap: () => provider.audioPlayer.play(),
-                                  customBorder: const CircleBorder(),
+                                  customBorder: CircleBorder(),
                                   child: Container(
                                     width: 80,
                                     height: 80,
@@ -228,9 +228,9 @@ class _CarModeScreenState extends State<CarModeScreen> {
                           ),
                           SizedBox(height: 8),
                           IconButton(
-                            icon: Icon(Icons.skip_next, color: Colors.white),
+                            icon: Icon(Icons.skip_next, color: Theme.of(context).textTheme.bodyLarge?.color),
                             iconSize: 48,
-                            constraints: const BoxConstraints(minWidth: 72, minHeight: 72),
+                            constraints: BoxConstraints(minWidth: 72, minHeight: 72),
                             onPressed: () => provider.playNext(),
                           ),
                           SizedBox(height: 8),
@@ -240,7 +240,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
                               color: provider.isFavorite(song) ? AppTheme.accentColor1 : Colors.white,
                             ),
                             iconSize: 48,
-                            constraints: const BoxConstraints(minWidth: 72, minHeight: 72),
+                            constraints: BoxConstraints(minWidth: 72, minHeight: 72),
                             onPressed: () => provider.toggleFavorite(song),
                           ),
                         ],
@@ -250,10 +250,10 @@ class _CarModeScreenState extends State<CarModeScreen> {
                 ],
               ),
             if (song == null)
-              const Center(
+              Center(
                 child: Text(
                   "No song playing",
-                  style: TextStyle(color: Colors.white70, fontSize: 24)
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 24)
                 ),
               ),
               
@@ -262,8 +262,8 @@ class _CarModeScreenState extends State<CarModeScreen> {
               top: 16,
               right: 16,
               child: IconButton(
-                icon: Icon(Icons.close, color: Colors.white, size: 40),
-                constraints: const BoxConstraints(minWidth: 72, minHeight: 72), // extra large touch target
+                icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge?.color, size: 40),
+                constraints: BoxConstraints(minWidth: 72, minHeight: 72), // extra large touch target
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -273,5 +273,9 @@ class _CarModeScreenState extends State<CarModeScreen> {
     );
   }
 }
+
+
+
+
 
 

@@ -6,7 +6,7 @@ import 'theme.dart';
 import 'album_art.dart';
 
 class QueueScreen extends StatefulWidget {
-  const QueueScreen({Key? key}) : super(key: key);
+  QueueScreen({Key? key}) : super(key: key);
 
   @override
   _QueueScreenState createState() => _QueueScreenState();
@@ -40,18 +40,18 @@ class _QueueScreenState extends State<QueueScreen> {
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Scaffold(
-          backgroundColor: const Color(0xFF121212),
+          backgroundColor: Color(0xFF121212),
           appBar: AppBar(
-            backgroundColor: const Color(0xFF121212),
+            backgroundColor: Color(0xFF121212),
             elevation: 0,
-            title: Text('Queue', style: TextStyle(color: Colors.white)),
+            title: Text('Queue', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
             leading: IconButton(
-              icon: Icon(Icons.keyboard_arrow_down, color: Colors.white),
+              icon: Icon(Icons.keyboard_arrow_down, color: Theme.of(context).textTheme.bodyLarge?.color),
               onPressed: () => Navigator.pop(context),
             ),
           ),
           body: queue.isEmpty
-              ? const Center(child: Text('Queue is empty', style: TextStyle(color: Colors.white)))
+              ? Center(child: Text('Queue is empty', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)))
               : ListView(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
@@ -62,12 +62,12 @@ class _QueueScreenState extends State<QueueScreen> {
                           title: Text(
                             'Previously Played',
                             style: TextStyle(
-                              color: Colors.white70,
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          iconColor: Colors.white70,
-                          collapsedIconColor: Colors.white70,
+                          iconColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                          collapsedIconColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                           onExpansionChanged: (expanded) {
                             setState(() {
                               _showPreviouslyPlayed = expanded;
@@ -103,7 +103,7 @@ class _QueueScreenState extends State<QueueScreen> {
                         child: Text(
                           'Up Next',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -134,14 +134,14 @@ class _QueueScreenState extends State<QueueScreen> {
       title: Text(
         song.title,
         style: TextStyle(
-          color: isPlaying ? const Color(0xFF1DB954) : Colors.white,
+          color: isPlaying ? Color(0xFF1DB954) : Theme.of(context).textTheme.bodyLarge?.color,
           fontWeight: isPlaying ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       subtitle: Text(
         song.artist,
         style: TextStyle(
-          color: Colors.white70,
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
         ),
       ),
       trailing: isPlaying
@@ -163,7 +163,7 @@ class _QueueScreenState extends State<QueueScreen> {
         color: Colors.red,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: Icon(Icons.delete, color: Colors.white),
+        child: Icon(Icons.delete, color: Theme.of(context).textTheme.bodyLarge?.color),
       ),
       onDismissed: (direction) {
         setState(() {
@@ -185,7 +185,7 @@ class _QueueScreenState extends State<QueueScreen> {
           width: 3,
           height: 12.0 + (index * 4 % 8), // Static visual representation of a wave
           decoration: BoxDecoration(
-            color: const Color(0xFF1DB954),
+            color: Color(0xFF1DB954),
             borderRadius: BorderRadius.circular(2),
           ),
         );
@@ -193,5 +193,9 @@ class _QueueScreenState extends State<QueueScreen> {
     );
   }
 }
+
+
+
+
 
 

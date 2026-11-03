@@ -40,7 +40,7 @@ class AlbumArt extends StatelessWidget {
       child: ClipRRect(
         borderRadius: borderRadius ?? BorderRadius.zero,
         child: imageProvider == null
-            ? Icon(Icons.music_note, color: Colors.white54, size: iconSize)
+            ? Icon(Icons.music_note, color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.54), size: iconSize)
             : Image(
                 image: imageProvider,
                 fit: BoxFit.cover,
@@ -51,4 +51,5 @@ class AlbumArt extends StatelessWidget {
     );
   }
 }
+
 

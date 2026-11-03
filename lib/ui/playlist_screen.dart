@@ -10,7 +10,7 @@ import 'album_art.dart';
 class PlaylistScreen extends StatelessWidget {
   final String playlistId;
 
-  const PlaylistScreen({super.key, required this.playlistId});
+  PlaylistScreen({super.key, required this.playlistId});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class PlaylistScreen extends StatelessWidget {
         title: Text(playlist.name),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit, color: Colors.white70),
+            icon: Icon(Icons.edit, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7) ?? Colors.grey),
             onPressed: () => _showRenameDialog(context, provider, playlist),
           ),
           IconButton(
@@ -41,11 +41,11 @@ class PlaylistScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.queue_music, size: 64, color: Colors.white24),
+                  Icon(Icons.queue_music, size: 64, color: Theme.of(context).dividerColor.withOpacity(0.24)),
                   SizedBox(height: 16),
                   Text(
                     'No songs in this playlist yet',
-                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54) ?? Colors.grey, fontSize: 16),
                   ),
                   SizedBox(height: 24),
                   ElevatedButton.icon(
@@ -94,7 +94,7 @@ class PlaylistScreen extends StatelessWidget {
                           icon: Icon(Icons.shuffle, color: AppTheme.accentColor1),
                           label: Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppTheme.accentColor1),
+                            side: BorderSide(color: AppTheme.accentColor1),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                         ),
@@ -130,7 +130,7 @@ class PlaylistScreen extends StatelessWidget {
                                 provider.removeSongFromPlaylist(playlist.id, song);
                               },
                             ),
-                            Icon(Icons.drag_handle, color: Colors.white38),
+                            Icon(Icons.drag_handle, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.38) ?? Colors.grey),
                           ],
                         ),
                         onTap: () => provider.playSong(song, playlist: playlist.songs),
@@ -148,23 +148,23 @@ class PlaylistScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF282828),
-        title: Text('Rename Playlist', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF282828),
+        title: Text('Rename Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
             hintText: 'Playlist name',
-            hintStyle: TextStyle(color: Colors.white38),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.38) ?? Colors.grey),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.24))),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.accentColor1)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7) ?? Colors.grey)),
           ),
           TextButton(
             onPressed: () {
@@ -185,8 +185,8 @@ class PlaylistScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF282828),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Color(0xFF282828),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) => _AddSongsSheet(playlistId: playlist.id),
@@ -270,7 +270,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Theme.of(context).dividerColor.withOpacity(0.24),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -278,7 +278,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 'Add to "${playlist.name}"',
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             // Search field
@@ -286,13 +286,13 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 controller: _controller,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                 decoration: InputDecoration(
                   hintText: 'Search songs to add...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  prefixIcon: Icon(Icons.search, color: Colors.white38),
+                  hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.38) ?? Colors.grey),
+                  prefixIcon: Icon(Icons.search, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.38) ?? Colors.grey),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
+                  fillColor: Theme.of(context).dividerColor.withOpacity(0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -312,7 +312,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(headerText, style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold)),
+                  child: Text(headerText, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54) ?? Colors.grey, fontSize: 14, fontWeight: FontWeight.bold)),
                 ),
               ),
             Expanded(
@@ -330,12 +330,12 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                       height: 45,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-                    subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                    title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14)),
+                    subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12)),
                     trailing: alreadyAdded
                         ? Icon(Icons.check_circle, color: AppTheme.accentColor1)
                         : IconButton(
-                            icon: Icon(Icons.add_circle_outline, color: Colors.white54),
+                            icon: Icon(Icons.add_circle_outline, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54) ?? Colors.grey),
                             onPressed: () {
                               provider.addSongToPlaylist(widget.playlistId, song);
                               setState(() {}); // refresh check marks
@@ -351,5 +351,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
     );
   }
 }
+
+
+
+
 
 

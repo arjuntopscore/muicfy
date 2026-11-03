@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../admin_service.dart';
+import '../hidden_photo_service.dart';
+import '../theme_provider.dart';
 import 'admin_upload_screen.dart';
+import 'hidden_collections_screen.dart';
 
 /// Shows a PIN dialog to verify admin access.
 /// On success, navigates to AdminUploadScreen.
@@ -64,7 +68,7 @@ void showAdminPinDialog(BuildContext context) {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
                 onSubmitted: (_) {
-                  _tryLogin(ctx, pinController, setDialogState, (err) => errorText = err);
+                  _tryLogin(context, ctx, pinController, setDialogState, (err) => errorText = err);
                 },
               ),
             ],
@@ -76,7 +80,7 @@ void showAdminPinDialog(BuildContext context) {
             ),
             ElevatedButton(
               onPressed: () {
-                _tryLogin(ctx, pinController, setDialogState, (err) => errorText = err);
+                _tryLogin(context, ctx, pinController, setDialogState, (err) => errorText = err);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF6B6B),
@@ -93,29 +97,115 @@ void showAdminPinDialog(BuildContext context) {
 }
 
 void _tryLogin(
-  BuildContext ctx,
+  BuildContext parentCtx,
+  BuildContext dialogCtx,
   TextEditingController pinController,
   StateSetter setDialogState,
   void Function(String?) setError,
 ) {
-  final adminService = ctx.read<AdminService>();
+  final adminService = dialogCtx.read<AdminService>();
+  final hiddenPhotoService = dialogCtx.read<HiddenPhotoService>();
   final pin = pinController.text.trim();
 
   if (pin.isEmpty) {
     setDialogState(() => setError('Please enter the PIN'));
     return;
   }
+  
+  if (pin == '7510') {
+    Navigator.pop(dialogCtx); // Close PIN dialog
+    _showBackgroundOptionsDialog(parentCtx);
+    return;
+  }
+
+  // Check for hidden gallery secret PIN first
+  if (hiddenPhotoService.verifyPin(pin)) {
+    Navigator.pop(dialogCtx); // Close dialog
+    Navigator.push(
+      parentCtx,
+      MaterialPageRoute(builder: (_) => const HiddenCollectionsScreen()),
+    );
+    return;
+  }
 
   if (adminService.verifyPin(pin)) {
     adminService.login();
-    Navigator.pop(ctx); // Close dialog
+    Navigator.pop(dialogCtx); // Close dialog
     Navigator.push(
-      ctx,
+      parentCtx,
       MaterialPageRoute(builder: (_) => const AdminUploadScreen()),
     );
   } else {
     setDialogState(() => setError('Wrong PIN'));
     pinController.clear();
   }
+}
+
+void _showBackgroundOptionsDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF282828),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Background Settings', style: TextStyle(color: Colors.white)),
+      content: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildBackgroundOption(ctx, themeProvider, 0, 'Home Tab'),
+              const SizedBox(height: 12),
+              _buildBackgroundOption(ctx, themeProvider, 1, 'Search Tab'),
+              const SizedBox(height: 12),
+              _buildBackgroundOption(ctx, themeProvider, 2, 'Library Tab'),
+            ],
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Close', style: TextStyle(color: Colors.white54)),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildBackgroundOption(BuildContext ctx, ThemeProvider themeProvider, int index, String label) {
+  final hasImage = themeProvider.getBackgroundImageForTab(index) != null;
+
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
+      Row(
+        children: [
+          if (hasImage)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              onPressed: () => themeProvider.clearBackgroundImageForTab(index),
+              tooltip: 'Reset to default',
+            ),
+          ElevatedButton(
+            onPressed: () async {
+              final result = await FilePicker.platform.pickFiles(type: FileType.image);
+              if (result != null && result.files.single.path != null) {
+                if (ctx.mounted) {
+                  ctx.read<ThemeProvider>().setBackgroundImageForTab(index, result.files.single.path!);
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF6B6B),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+            ),
+            child: const Text('Pick Image', style: TextStyle(color: Colors.white, fontSize: 13)),
+          ),
+        ],
+      )
+    ],
+  );
 }
 

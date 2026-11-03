@@ -5,9 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'dart:ui';
+import 'dart:io';
 
 import 'music_provider.dart';
 import 'admin_service.dart';
+import 'hidden_photo_service.dart';
 import 'ui/theme.dart';
 import 'ui/home_tab.dart';
 import 'ui/search_tab.dart';
@@ -34,6 +36,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => MusicProvider()),
         ChangeNotifierProvider(create: (_) => AdminService()),
+        ChangeNotifierProvider(create: (_) => HiddenPhotoService()),
       ],
       child: MusicApp(showOnboarding: !onboardingComplete),
     ),
@@ -110,6 +113,8 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    
     final pages = [
       HomeTab(
         onSearchTapped: () => _onTabTapped(1),
@@ -121,36 +126,63 @@ class _RootScreenState extends State<RootScreen> {
 
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
-    return Scaffold(
-      body: Row(
+    Widget body = Row(
+      children: [
+        if (isDesktop)
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _onTabTapped,
+            labelType: NavigationRailLabelType.all,
+            destinations: const [
+              NavigationRailDestination(icon: Icon(CupertinoIcons.home), selectedIcon: Icon(CupertinoIcons.house_fill), label: Text('Home')),
+              NavigationRailDestination(icon: Icon(CupertinoIcons.search), selectedIcon: Icon(CupertinoIcons.search), label: Text('Search')),
+              NavigationRailDestination(icon: Icon(CupertinoIcons.music_albums), selectedIcon: Icon(CupertinoIcons.music_albums_fill), label: Text('Library')),
+            ],
+          ),
+        if (isDesktop) const VerticalDivider(thickness: 1, width: 1),
+        Expanded(
+          child: Column(
+            children: [
+              Expanded(child: pages[_selectedIndex]),
+              const MiniPlayer(),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    final bgPath = themeProvider.getBackgroundImageForTab(_selectedIndex);
+
+    if (bgPath != null) {
+      body = Stack(
         children: [
-          if (isDesktop)
-            NavigationRail(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onTabTapped,
-              labelType: NavigationRailLabelType.all,
-              destinations: const [
-                NavigationRailDestination(icon: Icon(CupertinoIcons.home), selectedIcon: Icon(CupertinoIcons.house_fill), label: Text('Home')),
-                NavigationRailDestination(icon: Icon(CupertinoIcons.search), selectedIcon: Icon(CupertinoIcons.search), label: Text('Search')),
-                NavigationRailDestination(icon: Icon(CupertinoIcons.music_albums), selectedIcon: Icon(CupertinoIcons.music_albums_fill), label: Text('Library')),
-              ],
-            ),
-          if (isDesktop) const VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-            child: Column(
-              children: [
-                Expanded(child: pages[_selectedIndex]),
-                const MiniPlayer(),
-              ],
+          Positioned.fill(
+            child: Image.file(
+              File(bgPath),
+              fit: BoxFit.cover,
             ),
           ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+              child: Container(color: Colors.black.withOpacity(0.3)),
+            ),
+          ),
+          body,
         ],
-      ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: bgPath != null ? Colors.transparent : null,
+      body: body,
       bottomNavigationBar: isDesktop 
         ? null 
         : BottomNavigationBar(
             currentIndex: _selectedIndex,
             onTap: _onTabTapped,
+            backgroundColor: bgPath != null ? Colors.transparent : null,
+            elevation: bgPath != null ? 0 : 8,
             items: const [
               BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), activeIcon: Icon(CupertinoIcons.house_fill), label: 'Home'),
               BottomNavigationBarItem(icon: Icon(CupertinoIcons.search), activeIcon: Icon(CupertinoIcons.search), label: 'Search'),

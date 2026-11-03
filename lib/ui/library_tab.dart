@@ -404,7 +404,7 @@ class LibraryTab extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const StatsScreen()),
+                            MaterialPageRoute(builder: (_) => StatsScreen()),
                           );
                         },
                       ),
@@ -726,6 +726,7 @@ class _LibraryCard extends StatelessWidget {
     );
   }
 }
+
 
 
 

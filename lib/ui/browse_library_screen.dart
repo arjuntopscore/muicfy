@@ -14,7 +14,7 @@ class BrowseLibraryScreen extends StatefulWidget {
   final List<Color> gradientColors;
   final IconData icon;
 
-  const BrowseLibraryScreen({
+  BrowseLibraryScreen({
     super.key,
     required this.title,
     required this.query,
@@ -119,8 +119,8 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
     final provider = context.read<MusicProvider>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF282828),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Color(0xFF282828),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
@@ -132,23 +132,23 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
               Container(
                 width: 40, height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: Theme.of(context).dividerColor.withOpacity(0.24),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               SizedBox(height: 16),
-              Text(song.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(song.title, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
               SizedBox(height: 4),
-              Text(song.artist, style: const TextStyle(color: Colors.white54, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(song.artist, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
               SizedBox(height: 16),
               ListTile(
                 leading: Icon(
                   provider.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
-                  color: provider.isFavorite(song) ? Colors.redAccent : Colors.white70,
+                  color: provider.isFavorite(song) ? Colors.redAccent : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
                 title: Text(
                   provider.isFavorite(song) ? 'Remove from Favorites' : 'Add to Favorites',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                 ),
                 onTap: () {
                   provider.toggleFavorite(song);
@@ -156,24 +156,24 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
                 },
               ),
               if (provider.userPlaylists.isNotEmpty) ...[
-                const Divider(color: Colors.white12),
+                Divider(color: Theme.of(context).dividerColor.withOpacity(0.12)),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('Add to Playlist', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                    child: Text('Add to Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 12)),
                   ),
                 ),
                 ...provider.userPlaylists.map((pl) => ListTile(
-                  leading: Icon(Icons.queue_music, color: Colors.white70),
-                  title: Text(pl.name, style: const TextStyle(color: Colors.white)),
+                  leading: Icon(Icons.queue_music, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                  title: Text(pl.name, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
                   onTap: () {
                     provider.addSongToPlaylist(pl.id, song);
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Added to "${pl.name}"'),
-                        backgroundColor: const Color(0xFF282828),
+                        backgroundColor: Color(0xFF282828),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -200,7 +200,7 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
             pinned: true,
             backgroundColor: widget.gradientColors.first,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              icon: Icon(Icons.arrow_back_ios_new, color: Theme.of(context).textTheme.bodyLarge?.color),
               onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -217,11 +217,11 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: 24),
-                      Icon(widget.icon, size: 48, color: Colors.white),
+                      Icon(widget.icon, size: 48, color: Theme.of(context).textTheme.bodyLarge?.color),
                       SizedBox(height: 12),
                       Text(
                         widget.title,
-                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 22, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -258,7 +258,7 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
                       label: Text('Shuffle'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.accentColor1,
-                        side: const BorderSide(color: AppTheme.accentColor1),
+                        side: BorderSide(color: AppTheme.accentColor1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -271,7 +271,7 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
 
           // Loading state
           if (_isLoading)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               child: Center(
                 child: CircularProgressIndicator(color: AppTheme.accentColor1),
               ),
@@ -294,16 +294,16 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
                       song.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      style: TextStyle(fontWeight: FontWeight.w500),
                     ),
                     subtitle: Text(
                       song.artist,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 12),
                     ),
                     trailing: IconButton(
-                      icon: Icon(Icons.more_vert, color: Colors.white54),
+                      icon: Icon(Icons.more_vert, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54)),
                       onPressed: () => _showAddToPlaylistSheet(song),
                     ),
                     onTap: () {
@@ -338,6 +338,10 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
     );
   }
 }
+
+
+
+
 
 
 

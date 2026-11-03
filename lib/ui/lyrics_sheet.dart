@@ -8,7 +8,7 @@ class LyricsSheet extends StatefulWidget {
   final Song song;
   final ScrollController scrollController;
 
-  const LyricsSheet({
+  LyricsSheet({
     Key? key,
     required this.song,
     required this.scrollController,
@@ -70,7 +70,7 @@ class _LyricsSheetState extends State<LyricsSheet> {
       final response = await http.get(
         Uri.parse('https://lrclib.net/api/search?q=$queryWithArtist'), 
         headers: headers
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(Duration(seconds: 5));
       
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -93,7 +93,7 @@ class _LyricsSheetState extends State<LyricsSheet> {
       final response = await http.get(
         Uri.parse('https://lrclib.net/api/search?q=$queryTitleOnly'), 
         headers: headers
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(Duration(seconds: 5));
       
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -117,7 +117,7 @@ class _LyricsSheetState extends State<LyricsSheet> {
       final titleUrl = Uri.encodeComponent(cleanTitle);
       final fallbackResponse = await http.get(
         Uri.parse('https://api.lyrics.ovh/v1/$artistUrl/$titleUrl')
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(Duration(seconds: 5));
       
       if (fallbackResponse.statusCode == 200) {
         final data = json.decode(fallbackResponse.body);
@@ -163,7 +163,7 @@ class _LyricsSheetState extends State<LyricsSheet> {
                       width: 40,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: Theme.of(context).dividerColor.withOpacity(0.24),
                         borderRadius: BorderRadius.circular(2.5),
                       ),
                     ),
@@ -172,8 +172,8 @@ class _LyricsSheetState extends State<LyricsSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         widget.song.title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -185,8 +185,8 @@ class _LyricsSheetState extends State<LyricsSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         widget.song.artist,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                           fontSize: 16,
                         ),
                         textAlign: TextAlign.center,
@@ -234,13 +234,13 @@ class _LyricsSheetState extends State<LyricsSheet> {
     if (_isLoading) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           SizedBox(height: 48),
           Icon(Icons.music_note, color: Color(0xFF1DB954), size: 48),
           SizedBox(height: 16),
           Text(
             'Finding lyrics...',
-            style: TextStyle(color: Colors.white54, fontSize: 16),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 16),
           ),
         ],
       );
@@ -249,13 +249,13 @@ class _LyricsSheetState extends State<LyricsSheet> {
     if (_lyrics == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           SizedBox(height: 48),
-          Icon(Icons.sentiment_dissatisfied, color: Colors.white54, size: 48),
+          Icon(Icons.sentiment_dissatisfied, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), size: 48),
           SizedBox(height: 16),
           Text(
             'Lyrics not available for this song',
-            style: TextStyle(color: Colors.white54, fontSize: 16),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 16),
           ),
         ],
       );
@@ -264,13 +264,17 @@ class _LyricsSheetState extends State<LyricsSheet> {
     return Text(
       _lyrics!,
       textAlign: TextAlign.center,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         height: 1.8,
-        color: Colors.white,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
       ),
     );
   }
 }
+
+
+
+
 
 

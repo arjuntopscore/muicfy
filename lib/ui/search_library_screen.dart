@@ -13,7 +13,7 @@ class SearchLibraryScreen extends StatefulWidget {
   final String query;
   final List<Song> initialResults;
 
-  const SearchLibraryScreen({
+  SearchLibraryScreen({
     super.key,
     required this.query,
     required this.initialResults,
@@ -91,23 +91,23 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
   List<Color> get _headerGradient {
     final q = widget.query.toLowerCase();
     if (q.contains('malayalam')) {
-      return [const Color(0xFF1a237e), const Color(0xFF0d47a1)];
+      return [Color(0xFF1a237e), Color(0xFF0d47a1)];
     } else if (q.contains('tamil')) {
-      return [const Color(0xFFb71c1c), const Color(0xFFe65100)];
+      return [Color(0xFFb71c1c), Color(0xFFe65100)];
     } else if (q.contains('hindi')) {
-      return [const Color(0xFF4a148c), const Color(0xFF7b1fa2)];
+      return [Color(0xFF4a148c), Color(0xFF7b1fa2)];
     } else if (q.contains('telugu')) {
-      return [const Color(0xFF004d40), const Color(0xFF00695c)];
+      return [Color(0xFF004d40), Color(0xFF00695c)];
     } else if (q.contains('kannada')) {
-      return [const Color(0xFFe65100), const Color(0xFFf57c00)];
+      return [Color(0xFFe65100), Color(0xFFf57c00)];
     } else if (q.contains('rap') || q.contains('hip hop')) {
-      return [const Color(0xFF212121), const Color(0xFF424242)];
+      return [Color(0xFF212121), Color(0xFF424242)];
     } else if (q.contains('romantic') || q.contains('love')) {
-      return [const Color(0xFFc62828), const Color(0xFFe91e63)];
+      return [Color(0xFFc62828), Color(0xFFe91e63)];
     } else if (q.contains('sad')) {
-      return [const Color(0xFF263238), const Color(0xFF37474f)];
+      return [Color(0xFF263238), Color(0xFF37474f)];
     } else {
-      return [const Color(0xFF1b5e20), const Color(0xFF2e7d32)];
+      return [Color(0xFF1b5e20), Color(0xFF2e7d32)];
     }
   }
 
@@ -128,7 +128,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _displayTitle,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               background: Container(
                 decoration: BoxDecoration(
@@ -146,12 +146,12 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                       Icon(
                         _getIconForQuery(),
                         size: 60,
-                        color: Colors.white.withOpacity(0.3),
+                        color: Theme.of(context).iconTheme.color?.withOpacity(0.3),
                       ),
                       SizedBox(height: 8),
                       Text(
                         '${_songs.length} songs',
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                        style: TextStyle(color: Theme.of(context).iconTheme.color?.withOpacity(0.7), fontSize: 14),
                       ),
                     ],
                   ),
@@ -192,7 +192,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                       icon: Icon(Icons.shuffle, color: AppTheme.accentColor1),
                       label: Text('Shuffle', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.accentColor1),
+                        side: BorderSide(color: AppTheme.accentColor1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -213,15 +213,15 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Saved "$_displayTitle" as a playlist'),
-                      backgroundColor: const Color(0xFF282828),
+                      backgroundColor: Color(0xFF282828),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
-                icon: Icon(Icons.playlist_add, color: Colors.white70),
-                label: Text('Save as Playlist', style: TextStyle(color: Colors.white70)),
+                icon: Icon(Icons.playlist_add, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                label: Text('Save as Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7))),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white24),
+                  side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.24)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
@@ -245,7 +245,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                         child: Text(
                           '${index + 1}',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white38, fontSize: 14),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.38), fontSize: 14),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -260,8 +260,8 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis),
                   trailing: PopupMenuButton<String>(
-                    icon: Icon(Icons.more_vert, color: Colors.white54),
-                    color: const Color(0xFF282828),
+                    icon: Icon(Icons.more_vert, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54)),
+                    color: Color(0xFF282828),
                     onSelected: (value) {
                       if (value == 'favorite') {
                         provider.toggleFavorite(song);
@@ -276,24 +276,24 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                           children: [
                             Icon(
                               provider.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
-                              color: provider.isFavorite(song) ? AppTheme.accentColor1 : Colors.white70,
+                              color: provider.isFavorite(song) ? AppTheme.accentColor1 : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                               size: 20,
                             ),
                             SizedBox(width: 8),
                             Text(
                               provider.isFavorite(song) ? 'Remove from Favorites' : 'Add to Favorites',
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                             ),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'add_to_playlist',
                         child: Row(
                           children: [
-                            Icon(Icons.playlist_add, color: Colors.white70, size: 20),
+                            Icon(Icons.playlist_add, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7), size: 20),
                             SizedBox(width: 8),
-                            Text('Add to Playlist', style: TextStyle(color: Colors.white)),
+                            Text('Add to Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
                           ],
                         ),
                       ),
@@ -337,7 +337,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
     final playlists = provider.userPlaylists;
     if (playlists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Create a playlist first from the Library tab'),
           backgroundColor: Color(0xFF282828),
           behavior: SnackBarBehavior.floating,
@@ -348,8 +348,8 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF282828),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Color(0xFF282828),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) => Column(
@@ -360,13 +360,13 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: Theme.of(context).dividerColor.withOpacity(0.24),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           Padding(
             padding: EdgeInsets.all(16),
-            child: Text('Add to Playlist', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text('Add to Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
           ...playlists.map((p) => ListTile(
                 leading: Container(
@@ -378,15 +378,15 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   ),
                   child: Icon(Icons.queue_music, color: AppTheme.accentColor1),
                 ),
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                subtitle: Text('${p.songs.length} songs', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                title: Text(p.name, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+                subtitle: Text('${p.songs.length} songs', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 12)),
                 onTap: () {
                   provider.addSongToPlaylist(p.id, song);
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Added to "${p.name}"'),
-                      backgroundColor: const Color(0xFF282828),
+                      backgroundColor: Color(0xFF282828),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -398,6 +398,10 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
     );
   }
 }
+
+
+
+
 
 
 

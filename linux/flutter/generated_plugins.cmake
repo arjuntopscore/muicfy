@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_webview_window
+  fc_native_video_thumbnail
   url_launcher_linux
   window_to_front
 )

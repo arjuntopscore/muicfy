@@ -10,7 +10,7 @@ class ArtistScreen extends StatefulWidget {
   final String artistName;
   final String artistImageUrl;
 
-  const ArtistScreen({
+  ArtistScreen({
     super.key,
     required this.artistName,
     required this.artistImageUrl,
@@ -56,11 +56,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.artistName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               background: ShaderMask(
                 shaderCallback: (rect) {
-                  return const LinearGradient(
+                  return LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [Colors.black, Colors.transparent],
@@ -78,17 +78,17 @@ class _ArtistScreenState extends State<ArtistScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               child: Center(
                 child: CircularProgressIndicator(color: AppTheme.accentColor1),
               ),
             )
           else if (_artistSongs.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               child: Center(
                 child: Text(
                   'No songs found',
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
                 ),
               ),
             )
@@ -113,7 +113,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: isPlaying ? AppTheme.accentColor1 : Colors.white,
+                          color: isPlaying ? AppTheme.accentColor1 : Theme.of(context).textTheme.bodyLarge?.color,
                           fontWeight: isPlaying ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
@@ -121,7 +121,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         song.artist,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white54, fontSize: 12),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 12),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -129,11 +129,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
                           IconButton(
                             icon: Icon(
                               provider.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
-                              color: provider.isFavorite(song) ? AppTheme.accentColor1 : Colors.white54,
+                              color: provider.isFavorite(song) ? AppTheme.accentColor1 : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54),
                             ),
                             onPressed: () => provider.toggleFavorite(song),
                           ),
-                          Icon(Icons.more_vert, color: Colors.white54),
+                          Icon(Icons.more_vert, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54)),
                         ],
                       ),
                       onTap: () => provider.playSong(song, playlist: _artistSongs),
@@ -148,5 +148,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
     );
   }
 }
+
+
+
+
+
 
 

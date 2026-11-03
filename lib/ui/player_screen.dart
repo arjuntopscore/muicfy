@@ -12,7 +12,7 @@ import 'lyrics_sheet.dart';
 import 'car_mode_screen.dart';
 
 class PlayerScreen extends StatelessWidget {
-  const PlayerScreen({super.key});
+  PlayerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class PlayerScreen extends StatelessWidget {
     final song = provider.currentSong;
 
     if (song == null) {
-      return const Scaffold(body: Center(child: Text("No song playing")));
+      return Scaffold(body: Center(child: Text("No song playing")));
     }
 
     return Scaffold(
@@ -50,7 +50,7 @@ class PlayerScreen extends StatelessWidget {
                       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
                       Theme.of(context).scaffoldBackgroundColor,
                     ],
-                    stops: const [0.0, 0.3, 0.75, 1.0],
+                    stops: [0.0, 0.3, 0.75, 1.0],
                   ),
                 ),
               ),
@@ -61,7 +61,7 @@ class PlayerScreen extends StatelessWidget {
               builder: (context, constraints) {
                 return Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 500),
+                    constraints: BoxConstraints(maxWidth: 500),
                     child: SingleChildScrollView(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -88,10 +88,10 @@ class PlayerScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const Spacer(),
+                              Spacer(),
                               _buildSongInfo(context, song),
-                              _buildProgressBar(provider.audioPlayer),
-                              _buildControls(provider),
+                              _buildProgressBar(context, provider.audioPlayer),
+                              _buildControls(context, provider),
                               SizedBox(height: 8),
                               _buildExtraActions(context, provider, song),
                               SizedBox(height: 20),
@@ -126,7 +126,7 @@ class PlayerScreen extends StatelessWidget {
           IconButton(
             icon: Icon(
               song != null && song.isLocal ? Icons.offline_pin_rounded : CupertinoIcons.arrow_down_circle,
-              color: song != null && song.isLocal ? AppTheme.accentColor1 : Colors.white,
+              color: song != null && song.isLocal ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color,
             ),
             onPressed: song != null && !song.isLocal ? () => provider.downloadSong(song, context) : null,
           ),
@@ -160,7 +160,7 @@ class PlayerScreen extends StatelessWidget {
                 Text(
                   song.artist,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: const Color(0xFFB3B3B3),
+                        color: Color(0xFFB3B3B3),
                         fontSize: 16,
                       ),
                   maxLines: 1,
@@ -171,12 +171,12 @@ class PlayerScreen extends StatelessWidget {
           ),
           IconButton(
             icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
+              duration: Duration(milliseconds: 250),
               transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
               child: Icon(
                 isFav ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
                 key: ValueKey<bool>(isFav),
-                color: isFav ? AppTheme.accentColor1 : Colors.white,
+                color: isFav ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color,
                 size: 28,
               ),
             ),
@@ -186,10 +186,10 @@ class PlayerScreen extends StatelessWidget {
                 SnackBar(
                   content: Text(
                     isFav ? 'Removed from Favorites' : 'Added to Favorites',
-                    style: const TextStyle(color: Color(0xFF1DB954), fontWeight: FontWeight.w600),
+                    style: TextStyle(color: Color(0xFF1DB954), fontWeight: FontWeight.w600),
                   ),
-                  backgroundColor: const Color(0xFF282828),
-                  duration: const Duration(seconds: 1),
+                  backgroundColor: Color(0xFF282828),
+                  duration: Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -200,7 +200,7 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar(AudioPlayer player) {
+  Widget _buildProgressBar(BuildContext context, AudioPlayer player) {
     return StreamBuilder<Duration?>(
       stream: player.positionStream,
       builder: (context, snapshot) {
@@ -212,13 +212,13 @@ class PlayerScreen extends StatelessWidget {
           child: Column(
             children: [
               SliderTheme(
-                data: SliderThemeData(
+                data: SliderTheme.of(context).copyWith(
                   trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                  activeTrackColor: Colors.white,
-                  inactiveTrackColor: Colors.white24,
-                  thumbColor: Colors.white,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
+                  overlayShape: RoundSliderOverlayShape(overlayRadius: 12),
+                  
+                  
+                  
                 ),
                 child: Slider(
                   value: duration.inMilliseconds > 0 
@@ -236,8 +236,8 @@ class PlayerScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(_formatDuration(position), style: const TextStyle(color: Color(0xFFB3B3B3), fontSize: 12)),
-                    Text(_formatDuration(duration), style: const TextStyle(color: Color(0xFFB3B3B3), fontSize: 12)),
+                    Text(_formatDuration(position), style: TextStyle(color: Color(0xFFB3B3B3), fontSize: 12)),
+                    Text(_formatDuration(duration), style: TextStyle(color: Color(0xFFB3B3B3), fontSize: 12)),
                   ],
                 ),
               ),
@@ -255,21 +255,21 @@ class PlayerScreen extends StatelessWidget {
     return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
-  Widget _buildControls(MusicProvider provider) {
+  Widget _buildControls(BuildContext context, MusicProvider provider) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
           icon: Icon(
             Icons.shuffle_rounded, 
-            color: provider.isShuffleEnabled ? AppTheme.accentColor1 : Colors.white, 
+            color: provider.isShuffleEnabled ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color, 
             size: 28
           ),
           onPressed: provider.toggleShuffle,
         ),
         SizedBox(width: 16),
         IconButton(
-          icon: Icon(Icons.skip_previous_rounded, color: Colors.white, size: 38),
+          icon: Icon(Icons.skip_previous_rounded, color: Theme.of(context).iconTheme.color, size: 38),
           onPressed: provider.playPrevious,
         ),
         SizedBox(width: 16),
@@ -303,14 +303,14 @@ class PlayerScreen extends StatelessWidget {
         ),
         SizedBox(width: 16),
         IconButton(
-          icon: Icon(Icons.skip_next_rounded, color: Colors.white, size: 38),
+          icon: Icon(Icons.skip_next_rounded, color: Theme.of(context).iconTheme.color, size: 38),
           onPressed: provider.playNext,
         ),
         SizedBox(width: 16),
         IconButton(
           icon: Icon(
             provider.repeatMode == PlaybackRepeatMode.one ? Icons.repeat_one_rounded : Icons.repeat_rounded, 
-            color: provider.repeatMode != PlaybackRepeatMode.off ? AppTheme.accentColor1 : Colors.white, 
+            color: provider.repeatMode != PlaybackRepeatMode.off ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color, 
             size: 28
           ),
           onPressed: provider.toggleRepeat,
@@ -327,24 +327,24 @@ class PlayerScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // Lyrics
-          _buildActionButton(
+          _buildActionButton(context,
             icon: Icons.lyrics_rounded,
             label: 'Lyrics',
             onTap: () => LyricsSheet.show(context, song),
           ),
           // Queue
-          _buildActionButton(
+          _buildActionButton(context,
             icon: Icons.queue_music_rounded,
             label: 'Queue',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const QueueScreen()),
+                MaterialPageRoute(builder: (_) => QueueScreen()),
               );
             },
           ),
           // Sleep Timer
-          _buildActionButton(
+          _buildActionButton(context,
             icon: provider.isSleepTimerActive ? CupertinoIcons.timer_fill : CupertinoIcons.timer,
             label: provider.isSleepTimerActive
                 ? '${provider.sleepTimerRemaining!.inMinutes}m'
@@ -353,13 +353,13 @@ class PlayerScreen extends StatelessWidget {
             onTap: () => _showSleepTimerSheet(context, provider),
           ),
           // Car Mode
-          _buildActionButton(
+          _buildActionButton(context,
             icon: CupertinoIcons.car_detailed,
             label: 'Car',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CarModeScreen()),
+                MaterialPageRoute(builder: (_) => CarModeScreen()),
               );
             },
           ),
@@ -368,7 +368,7 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildActionButton(BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -379,12 +379,12 @@ class PlayerScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isActive ? AppTheme.accentColor1 : Colors.white54, size: 22),
+          Icon(icon, color: isActive ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color?.withValues(alpha: 0.54), size: 22),
           SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isActive ? AppTheme.accentColor1 : Colors.white54,
+              color: isActive ? AppTheme.accentColor1 : Theme.of(context).iconTheme.color?.withValues(alpha: 0.54),
               fontSize: 11,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
@@ -397,8 +397,8 @@ class PlayerScreen extends StatelessWidget {
   void _showSleepTimerSheet(BuildContext context, MusicProvider provider) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
@@ -409,16 +409,16 @@ class PlayerScreen extends StatelessWidget {
             children: [
               Container(
                 width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: Theme.of(context).dividerColor.withValues(alpha: 0.24), borderRadius: BorderRadius.circular(2)),
               ),
               SizedBox(height: 20),
-              Text('Sleep Timer', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Sleep Timer', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               Text(
                 provider.isSleepTimerActive
                     ? 'Music will stop in ${provider.sleepTimerRemaining!.inMinutes} min ${provider.sleepTimerRemaining!.inSeconds % 60} sec'
                     : 'Stop music after a set time',
-                style: const TextStyle(color: Colors.white54, fontSize: 13),
+                style: TextStyle(color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.54), fontSize: 13),
               ),
               SizedBox(height: 20),
 
@@ -427,12 +427,12 @@ class PlayerScreen extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  _timerOption(ctx, provider, '15 min', const Duration(minutes: 15)),
-                  _timerOption(ctx, provider, '30 min', const Duration(minutes: 30)),
-                  _timerOption(ctx, provider, '45 min', const Duration(minutes: 45)),
-                  _timerOption(ctx, provider, '1 hour', const Duration(hours: 1)),
-                  _timerOption(ctx, provider, '1.5 hours', const Duration(minutes: 90)),
-                  _timerOption(ctx, provider, '2 hours', const Duration(hours: 2)),
+                  _timerOption(ctx, provider, '15 min', Duration(minutes: 15)),
+                  _timerOption(ctx, provider, '30 min', Duration(minutes: 30)),
+                  _timerOption(ctx, provider, '45 min', Duration(minutes: 45)),
+                  _timerOption(ctx, provider, '1 hour', Duration(hours: 1)),
+                  _timerOption(ctx, provider, '1.5 hours', Duration(minutes: 90)),
+                  _timerOption(ctx, provider, '2 hours', Duration(hours: 2)),
                 ],
               ),
 
@@ -463,7 +463,7 @@ class PlayerScreen extends StatelessWidget {
         ScaffoldMessenger.of(ctx).showSnackBar(
           SnackBar(
             content: Text('Sleep timer set for $label 🌙'),
-            backgroundColor: const Color(0xFF282828),
+            backgroundColor: Color(0xFF282828),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -471,11 +471,11 @@ class PlayerScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF282828),
+          color: Color(0xFF282828),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Theme.of(ctx).dividerColor.withValues(alpha: 0.12)),
         ),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        child: Text(label, style: TextStyle(color: Theme.of(ctx).textTheme.bodyLarge?.color, fontWeight: FontWeight.w500)),
       ),
     );
   }
@@ -495,6 +495,11 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
 
 
 

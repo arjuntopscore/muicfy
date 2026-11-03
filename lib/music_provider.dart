@@ -634,12 +634,29 @@ class MusicProvider extends ChangeNotifier {
     bool startedPlayingNewSong = false;
 
     try {
-      // Search for more songs by the current artist
-      final results = await _apiService.searchSongs(current.artist, limit: 15);
+      String query = current.artist;
+      if (query == 'Unknown' || query == 'Various Artists') {
+        query = current.title;
+      }
+      if (current.language.isNotEmpty && current.language != 'unknown') {
+        query += ' ${current.language}';
+      }
+
+      // Search for more songs by the current artist/language
+      final results = await _apiService.searchSongs(query, limit: 20);
       
-      // Filter out songs already in the playlist
+      // Filter out songs already in the playlist and prioritize same language
       final existingIds = originalPlaylist.map((s) => s.id).toSet();
-      final newSongs = results.where((s) => !existingIds.contains(s.id)).toList();
+      
+      List<Song> newSongs = results.where((s) => 
+        !existingIds.contains(s.id) && 
+        (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language)
+      ).toList();
+
+      // Fallback if language strict filtering leaves us with nothing
+      if (newSongs.isEmpty) {
+        newSongs = results.where((s) => !existingIds.contains(s.id)).toList();
+      }
 
       if (newSongs.isNotEmpty) {
         if (isShuffleEnabled) {
@@ -892,16 +909,21 @@ class MusicProvider extends ChangeNotifier {
       // Count artist frequency from playback history
       final Map<String, int> artistCounts = {};
       for (final event in playbackHistory) {
-        final artist = event.artist;
-        artistCounts[artist] = (artistCounts[artist] ?? 0) + 1;
+        for (final artist in event.artist.split(',')) {
+          final trimmed = artist.trim();
+          if (trimmed.isNotEmpty) {
+            artistCounts[trimmed] = (artistCounts[trimmed] ?? 0) + 1;
+          }
+        }
       }
 
       // Also include favorites artists
       for (final song in favorites) {
-        // Split comma-separated artists
         for (final artist in song.artist.split(',')) {
           final trimmed = artist.trim();
-          artistCounts[trimmed] = (artistCounts[trimmed] ?? 0) + 2; // weight favorites higher
+          if (trimmed.isNotEmpty) {
+            artistCounts[trimmed] = (artistCounts[trimmed] ?? 0) + 2; // weight favorites higher
+          }
         }
       }
 
@@ -910,9 +932,9 @@ class MusicProvider extends ChangeNotifier {
         ..sort((a, b) => b.value.compareTo(a.value));
       
       final topArtists = sortedArtists
-          .take(5)
           .map((e) => e.key)
-          .where((a) => a != 'Unknown' && a != 'Local File')
+          .where((a) => a != 'Unknown' && a != 'Local File' && a.isNotEmpty)
+          .take(5)
           .toList();
 
       if (topArtists.isEmpty) {
@@ -924,14 +946,22 @@ class MusicProvider extends ChangeNotifier {
       final Set<String> seenIds = {};
       final List<Song> mixSongs = [];
 
-      final futures = topArtists.map((artist) => _apiService.searchSongs(artist, limit: 10));
+      // Increase limit because we'll filter out non-matching artists locally
+      final futures = topArtists.map((artist) => _apiService.searchSongs(artist, limit: 20));
       final results = await Future.wait(futures);
 
-      for (final songs in results) {
+      for (int i = 0; i < topArtists.length; i++) {
+        final targetArtist = topArtists[i].toLowerCase();
+        final songs = results[i];
+        
         for (final song in songs) {
-          if (!seenIds.contains(song.id)) {
-            seenIds.add(song.id);
-            mixSongs.add(song);
+          final songArtists = song.artist.toLowerCase();
+          // Ensure the returned song is actually by the requested artist
+          if (songArtists.contains(targetArtist)) {
+            if (!seenIds.contains(song.id)) {
+              seenIds.add(song.id);
+              mixSongs.add(song);
+            }
           }
         }
       }
@@ -963,6 +993,22 @@ class MusicProvider extends ChangeNotifier {
   void playFromQueue(int index) {
     if (index < 0 || index >= currentPlaylist.length) return;
     playSong(currentPlaylist[index]);
+  }
+
+  /// Add a song to the end of the current queue
+  void addSongToQueue(Song song) {
+    if (!currentPlaylist.any((s) => s.id == song.id)) {
+      currentPlaylist.add(song);
+      originalPlaylist.add(song);
+      notifyListeners();
+    }
+  }
+
+  /// Sets the queue to a new list of songs and starts playing from [initialIndex]
+  void setQueueAndPlay(List<Song> songs, {int initialIndex = 0}) {
+    if (songs.isEmpty) return;
+    final clampedIndex = initialIndex.clamp(0, songs.length - 1);
+    playSong(songs[clampedIndex], playlist: songs);
   }
 
   @override

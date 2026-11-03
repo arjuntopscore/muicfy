@@ -45,7 +45,7 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 400),
             reverseTransitionDuration: const Duration(milliseconds: 350),
-            pageBuilder: (context, animation, secondaryAnimation) => const PlayerScreen(),
+            pageBuilder: (context, animation, secondaryAnimation) => PlayerScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const curve = Curves.easeInOutCubicEmphasized;
               var curvedAnimation = CurvedAnimation(parent: animation, curve: curve);
@@ -200,6 +200,7 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
     );
   }
 }
+
 
 
 

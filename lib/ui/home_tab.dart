@@ -10,6 +10,8 @@ import 'favorites_screen.dart';
 import 'artist_screen.dart';
 import 'admin_pin_dialog.dart';
 import 'admin_upload_screen.dart';
+import '../gemini/gemini_music_screen.dart';
+import '../gemini/gemini_config.dart';
 class HomeTab extends StatelessWidget {
   final VoidCallback onSearchTapped;
   final VoidCallback onLocalLibraryTapped;
@@ -36,11 +38,15 @@ class HomeTab extends StatelessWidget {
         ? '${_getGreeting()}, ${provider.userName}'
         : _getGreeting();
 
+    final themeProvider = context.watch<ThemeProvider>();
+    final hasBackground = themeProvider.getBackgroundImageForTab(0) != null;
+
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        color: hasBackground ? Colors.transparent : null,
+        gradient: hasBackground ? null : LinearGradient(
           colors: [
-            context.watch<ThemeProvider>().isDarkMode 
+            themeProvider.isDarkMode 
                 ? const Color(0xFF2a2a2a) 
                 : AppTheme.accentColor1.withOpacity(0.15),
             Theme.of(context).scaffoldBackgroundColor,
@@ -75,7 +81,7 @@ class HomeTab extends StatelessWidget {
                             : Theme.of(context).cardColor,
                         child: Icon(
                           adminService.isAdminLoggedIn ? Icons.admin_panel_settings : Icons.person,
-                          color: adminService.isAdminLoggedIn ? const Color(0xFFFF6B6B) : Colors.white,
+                          color: adminService.isAdminLoggedIn ? const Color(0xFFFF6B6B) : Theme.of(context).iconTheme.color,
                         ),
                       ),
                     ),
@@ -89,6 +95,20 @@ class HomeTab extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.auto_awesome, color: Colors.amber),
+                      tooltip: 'Gemini AI Music',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GeminiMusicScreen(
+                              geminiApiKey: geminiApiKey,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     IconButton(
                       icon: Icon(
                         context.watch<ThemeProvider>().isDarkMode 
@@ -107,6 +127,12 @@ class HomeTab extends StatelessWidget {
             
             SliverToBoxAdapter(
               child: _buildQuickSearchCard(context),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 12),
+            ),
+            SliverToBoxAdapter(
+              child: _buildGeminiAiCard(context),
             ),
 
             // ── Admin Catalog Songs ──
@@ -489,8 +515,78 @@ class HomeTab extends StatelessWidget {
       ),
     );
   }
-}
 
+  Widget _buildGeminiAiCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const GeminiMusicScreen(
+              geminiApiKey: geminiApiKey,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6A11CB).withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Gemini AI Music Hub ✨',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Create vibe playlists & search by scene',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 
 

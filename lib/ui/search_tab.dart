@@ -8,6 +8,8 @@ import '../song_model.dart';
 import 'theme.dart';
 import 'album_art.dart';
 import 'search_library_screen.dart';
+import '../gemini/gemini_music_screen.dart';
+import '../gemini/gemini_config.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -188,6 +190,54 @@ class _SearchTabState extends State<SearchTab> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const GeminiMusicScreen(
+                      geminiApiKey: geminiApiKey,
+                    ),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6A11CB).withValues(alpha: 0.2),
+                      const Color(0xFF2575FC).withValues(alpha: 0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFF6A11CB).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: Colors.amber, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Searching by a scene or vibe? Try Gemini AI ✨',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 12),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
 
           // Library search hint
           if (_searchController.text.isNotEmpty && _isLibrarySearch(_searchController.text))
@@ -300,7 +350,6 @@ class _SearchTabState extends State<SearchTab> {
     );
   }
 }
-
 
 
 
