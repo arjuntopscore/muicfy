@@ -1,8 +1,16 @@
-# 🎵 Musicify
+# 🎵 Pattufy
 
-![Musicify Hero](assets/app_icon.jpg)
+<p align="center">
+  <img src="assets/app_icon.png" alt="Pattufy Logo" width="160" style="border-radius: 32px;" />
+</p>
 
-**Musicify** is a sleek, feature-rich Flutter music player application designed to provide an immersive, modern audio and visual experience. Built with an Apple Music-inspired glassmorphic dark theme, it offers seamless playback, 1080p looping video canvases, Gemini AI music discovery, synchronized lyrics, secure private vaults, and cross-platform desktop/mobile support.
+<p align="center">
+  <b>Next-Generation Immersive Audio & Video Music Experience</b>
+</p>
+
+---
+
+**Pattufy** is a sleek, feature-rich Flutter music player application designed to provide an immersive, modern audio and visual experience. Built with an Apple Music-inspired glassmorphic dark theme, it offers seamless playback, 1080p looping video canvases, Gemini AI music discovery, synchronized lyrics, secure private vaults, and cross-platform desktop/mobile support.
 
 ---
 
