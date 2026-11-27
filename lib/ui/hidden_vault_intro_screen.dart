@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../hidden_photo_service.dart';
 import 'hidden_gallery_screen.dart';
 
-const Color _kAccent = Color(0xFFFF4081);
-const Color _kAccent2 = Color(0xFF7A1FA2);
+const Color _kCyberCyan = Color(0xFF00E5FF);
+const Color _kNeonRose = Color(0xFFFF2D55);
+const Color _kSecureGreen = Color(0xFF10B981);
 
 class HiddenVaultIntroScreen extends StatefulWidget {
   final String collectionId;
@@ -26,7 +28,7 @@ class HiddenVaultIntroScreen extends StatefulWidget {
 
 class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
     with TickerProviderStateMixin {
-  static const Duration _duration = Duration(seconds: 5);
+  static const Duration _duration = Duration(milliseconds: 3200);
 
   late final AnimationController _kenBurns;
   late final AnimationController _overlay;
@@ -40,8 +42,7 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
   void initState() {
     super.initState();
     _kenBurns = AnimationController(vsync: this, duration: _duration)..forward();
-    _overlay = AnimationController(vsync: this, duration: const Duration(milliseconds: 650))
-      ..forward();
+    _overlay = AnimationController(vsync: this, duration: const Duration(milliseconds: 500))..forward();
     _progress = AnimationController(vsync: this, duration: _duration)..forward();
 
     _setupCover();
@@ -74,9 +75,9 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
     _navigated = true;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, __, ___) => HiddenGalleryScreen(collectionId: widget.collectionId),
-        transitionsBuilder: (_, animation, __, child) {
+        transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (context, animation, secondaryAnimation) => HiddenGalleryScreen(collectionId: widget.collectionId),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -117,6 +118,38 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
               opacity: CurvedAnimation(parent: _overlay, curve: Curves.easeOut),
               child: _buildOverlay(),
             ),
+
+            // Top skip button
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              right: 20,
+              child: GestureDetector(
+                onTap: _goToGallery,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Skip',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 10),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -128,7 +161,7 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
       animation: _kenBurns,
       builder: (context, child) {
         final t = Curves.easeOut.transform(_kenBurns.value);
-        final scale = 1.05 + 0.18 * t;
+        final scale = 1.05 + 0.15 * t;
         final dx = -8.0 * t;
         final dy = -6.0 * t;
         return Transform.translate(
@@ -139,7 +172,7 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
       child: Image.file(
         File(path),
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _buildFallbackLayer(),
+        errorBuilder: (context, error, stackTrace) => _buildFallbackLayer(),
       ),
     );
   }
@@ -149,7 +182,7 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
       animation: _kenBurns,
       builder: (context, child) {
         final t = Curves.easeOut.transform(_kenBurns.value);
-        final scale = 1.05 + 0.15 * t;
+        final scale = 1.05 + 0.12 * t;
         return Transform.scale(scale: scale, child: child);
       },
       child: SizedBox.expand(
@@ -171,15 +204,15 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2A003F), _kAccent2, _kAccent],
+          colors: [Color(0xFF0F2038), Color(0xFF16102C), Color(0xFF090D16)],
           stops: [0.0, 0.55, 1.0],
         ),
       ),
       alignment: Alignment.center,
       child: Icon(
-        Icons.lock_rounded,
-        color: Colors.white.withOpacity(0.3),
-        size: 120,
+        CupertinoIcons.lock_shield_fill,
+        color: _kCyberCyan.withValues(alpha: 0.25),
+        size: 110,
       ),
     );
   }
@@ -192,10 +225,10 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withOpacity(0.55),
-              Colors.black.withOpacity(0.15),
-              Colors.black.withOpacity(0.65),
-              Colors.black.withOpacity(0.9),
+              Colors.black.withValues(alpha: 0.6),
+              Colors.black.withValues(alpha: 0.2),
+              Colors.black.withValues(alpha: 0.7),
+              Colors.black.withValues(alpha: 0.95),
             ],
             stops: const [0.0, 0.35, 0.75, 1.0],
           ),
@@ -207,167 +240,122 @@ class _HiddenVaultIntroScreenState extends State<HiddenVaultIntroScreen>
   Widget _buildOverlay() {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(colors: [_kAccent, _kAccent2]),
-                    boxShadow: [
-                      BoxShadow(color: _kAccent.withOpacity(0.5), blurRadius: 16),
-                    ],
-                  ),
-                  child: const Icon(Icons.lock_rounded, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ENTERING VAULT',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2.4,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: _goToGallery,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Skip',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_rounded, color: Colors.white.withOpacity(0.9), size: 14),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const Spacer(),
-            _buildBottomPanel(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomPanel() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.title,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 34,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1.0,
-            height: 1.05,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
+            // Glowing Lock Icon
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              width: 58,
+              height: 58,
               decoration: BoxDecoration(
-                color: _kAccent.withOpacity(0.22),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _kAccent.withOpacity(0.5)),
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [_kCyberCyan, _kNeonRose],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _kCyberCyan.withValues(alpha: 0.45),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(CupertinoIcons.lock_shield_fill, color: Colors.white, size: 28),
+            ),
+            const SizedBox(height: 20),
+
+            // Decryption handshake tag
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _kSecureGreen.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _kSecureGreen.withValues(alpha: 0.5)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.shield_rounded, color: Colors.white, size: 12),
-                  SizedBox(width: 5),
+                  Icon(Icons.shield_outlined, color: _kSecureGreen, size: 12),
+                  SizedBox(width: 6),
                   Text(
-                    'ENCRYPTED',
+                    'AES-256 ENCRYPTED PARTITION',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: _kSecureGreen,
                       fontSize: 10,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                       letterSpacing: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(height: 12),
+
+            // Collection Title
             Text(
-              'Unlocking...',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              widget.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.8,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 10),
+            AnimatedBuilder(
+              animation: _progress,
+              builder: (context, _) {
+                final val = _progress.value;
+                String status = 'Authenticating cryptographic key...';
+                if (val > 0.35) status = 'Decrypting media container...';
+                if (val > 0.75) status = 'Mounting private secure enclave...';
+
+                return Text(
+                  status,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Smooth Decryption Progress Bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: AnimatedBuilder(
+                animation: _progress,
+                builder: (context, _) => LinearProgressIndicator(
+                  value: _progress.value,
+                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  valueColor: const AlwaysStoppedAnimation<Color>(_kCyberCyan),
+                  minHeight: 3,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Tap anywhere to open enclave instantly',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 18),
-        AnimatedBuilder(
-          animation: _progress,
-          builder: (context, _) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Stack(
-                children: [
-                  Container(
-                    height: 4,
-                    color: Colors.white.withOpacity(0.12),
-                  ),
-                  FractionallySizedBox(
-                    widthFactor: _progress.value.clamp(0.0, 1.0),
-                    child: Container(
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [_kAccent, _kAccent2]),
-                        boxShadow: [
-                          BoxShadow(color: _kAccent.withOpacity(0.6), blurRadius: 10),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
+      ),
     );
   }
 }

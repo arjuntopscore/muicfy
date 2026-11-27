@@ -176,23 +176,30 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
     final musicProvider = context.read<MusicProvider>();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.admin_panel_settings, color: Color(0xFFFF6B6B), size: 24),
-            SizedBox(width: 8),
-            Text(
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: AppTheme.accentGradient,
+              ),
+              child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Text(
               'Admin Catalog',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white54),
+            icon: const Icon(Icons.refresh, color: Colors.white70),
             tooltip: 'Refresh catalog',
             onPressed: () => adminService.fetchCatalogFromApi(),
           ),
@@ -201,90 +208,98 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
               adminService.logout();
               Navigator.pop(context);
             },
-            icon: Icon(Icons.logout, color: Colors.redAccent, size: 18),
-            label: Text('Logout', style: TextStyle(color: Colors.redAccent)),
+            icon: const Icon(Icons.logout, color: AppTheme.accentColor1, size: 18),
+            label: const Text('Logout', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Upload Form ──
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
+                color: const Color(0xFF141926),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: AppTheme.accentColor1.withValues(alpha: 0.35), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.cloud_upload, color: Color(0xFFFF6B6B), size: 22),
-                      SizedBox(width: 8),
-                      Text(
+                      const Icon(Icons.cloud_upload_rounded, color: AppTheme.accentColor1, size: 24),
+                      const SizedBox(width: 10),
+                      const Text(
                         'Upload New Song',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    'Upload a song file — it will be available to all users.',
-                    style: TextStyle(color: Colors.white54, fontSize: 13),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Upload a song file — it will be synced and available to all users.',
+                    style: TextStyle(color: Colors.white60, fontSize: 13),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // Audio file picker
                   _buildFilePicker(
                     label: 'Audio File *',
                     fileName: _audioFileName,
-                    icon: Icons.audio_file,
-                    accentColor: const Color(0xFFFF6B6B),
+                    icon: Icons.audio_file_rounded,
+                    accentColor: AppTheme.accentColor1,
                     onTap: adminService.isUploading ? null : _pickAudioFile,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
                   // Cover image picker
                   _buildFilePicker(
                     label: 'Cover Image (optional)',
                     fileName: _imageFileName,
-                    icon: Icons.image,
-                    accentColor: const Color(0xFF64B5F6),
+                    icon: Icons.image_rounded,
+                    accentColor: const Color(0xFF0A84FF),
                     onTap: adminService.isUploading ? null : _pickImageFile,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                  _buildTextField(_titleController, 'Song Title *', Icons.music_note),
-                  SizedBox(height: 12),
-                  _buildTextField(_artistController, 'Artist Name *', Icons.person),
-                  SizedBox(height: 12),
+                  _buildTextField(_titleController, 'Song Title *', Icons.music_note_rounded),
+                  const SizedBox(height: 12),
+                  _buildTextField(_artistController, 'Artist Name *', Icons.person_rounded),
+                  const SizedBox(height: 12),
 
                   // Language dropdown
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF404040),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedLanguage,
                         isExpanded: true,
-                        dropdownColor: const Color(0xFF404040),
-                        icon: Icon(Icons.arrow_drop_down, color: Colors.white54),
-                        style: const TextStyle(color: Colors.white, fontSize: 15),
+                        dropdownColor: const Color(0xFF1E2433),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white60),
+                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
                         items: _languages.map((lang) {
                           return DropdownMenuItem(
                             value: lang,
                             child: Row(
                               children: [
-                                Icon(Icons.language, color: Colors.white54, size: 18),
-                                SizedBox(width: 8),
+                                const Icon(Icons.language_rounded, color: Colors.white54, size: 18),
+                                const SizedBox(width: 10),
                                 Text(lang[0].toUpperCase() + lang.substring(1)),
                               ],
                             ),
@@ -298,7 +313,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // Preview card
                   if (_audioFilePath != null)
@@ -310,14 +325,14 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                   // Upload button / progress
                   SizedBox(
                     width: double.infinity,
+                    height: 50,
                     child: adminService.isUploading
                         ? Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF404040),
-                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(26),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
@@ -325,28 +340,41 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Color(0xFFFF6B6B),
+                                    color: AppTheme.accentColor1,
                                   ),
                                 ),
                                 SizedBox(width: 12),
                                 Text(
                                   'Uploading to server...',
-                                  style: TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.bold, fontSize: 15),
+                                  style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold, fontSize: 15),
                                 ),
                               ],
                             ),
                           )
-                        : ElevatedButton.icon(
-                            onPressed: _uploadSong,
-                            icon: Icon(Icons.cloud_upload, color: Colors.black),
-                            label: Text(
-                              'Upload to Catalog',
-                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                        : Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(26),
+                              gradient: AppTheme.accentGradient,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.accentColor1.withValues(alpha: 0.45),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF6B6B),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            child: ElevatedButton.icon(
+                              onPressed: _uploadSong,
+                              icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
+                              label: const Text(
+                                'Upload to Catalog',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                              ),
                             ),
                           ),
                   ),
@@ -354,7 +382,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
               ),
             ),
 
-            SizedBox(height: 28),
+            const SizedBox(height: 32),
 
             // ── Catalog Songs List ──
             Row(
@@ -362,7 +390,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
               children: [
                 Text(
                   'Catalog Songs (${adminService.catalogSongs.length})',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
                 ),
                 if (adminService.catalogSongs.isNotEmpty)
                   GestureDetector(
@@ -375,37 +403,45 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1DB954),
+                        gradient: AppTheme.accentGradient,
                         borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.accentColor1.withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.play_arrow, color: Colors.black, size: 18),
+                          Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18),
                           SizedBox(width: 4),
-                          Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('Play All', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
                     ),
                   ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             if (adminService.isLoadingCatalog)
-              Padding(
+              const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: CircularProgressIndicator(color: Color(0xFFFF6B6B), strokeWidth: 2)),
+                child: Center(child: CircularProgressIndicator(color: AppTheme.accentColor1, strokeWidth: 2)),
               )
             else if (adminService.catalogSongs.isEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFF141926),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                 ),
-                child: Column(
+                child: const Column(
                   children: [
                     Icon(Icons.cloud_upload_outlined, size: 48, color: Colors.white24),
                     SizedBox(height: 12),
@@ -426,20 +462,21 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFF141926),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: SizedBox(
-                          width: 50,
-                          height: 50,
+                          width: 48,
+                          height: 48,
                           child: AlbumArt(
                             song: song,
-                            width: 50,
-                            height: 50,
+                            width: 48,
+                            height: 48,
                             borderRadius: BorderRadius.circular(8),
                             iconSize: 24,
                           ),
@@ -447,7 +484,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                       ),
                       title: Text(
                         song.title,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14.5),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -461,13 +498,13 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.play_circle_fill, color: Color(0xFF1DB954)),
+                            icon: const Icon(Icons.play_circle_fill_rounded, color: AppTheme.accentColor1, size: 28),
                             onPressed: () {
                               musicProvider.playSong(song, playlist: adminService.catalogSongs);
                             },
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete_outline, color: Colors.redAccent),
+                            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFFF453A)),
                             onPressed: () => _confirmDelete(adminService, song),
                           ),
                         ],
@@ -480,7 +517,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                 },
               ),
 
-            SizedBox(height: 100),
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -500,34 +537,34 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: hasFile ? accentColor.withValues(alpha: 0.15) : const Color(0xFF404040),
-          borderRadius: BorderRadius.circular(12),
-          border: hasFile ? Border.all(color: accentColor.withValues(alpha: 0.5)) : null,
+          color: hasFile ? accentColor.withValues(alpha: 0.16) : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: hasFile ? accentColor.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
             Icon(
-              hasFile ? Icons.check_circle : icon,
+              hasFile ? Icons.check_circle_rounded : icon,
               color: hasFile ? accentColor : Colors.white38,
               size: 22,
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: TextStyle(color: hasFile ? accentColor : Colors.white38, fontSize: 11, fontWeight: FontWeight.w600)),
+                      style: TextStyle(color: hasFile ? accentColor : Colors.white38, fontSize: 11, fontWeight: FontWeight.w700)),
                   if (hasFile) ...[
-                    SizedBox(height: 2),
-                    Text(fileName, style: const TextStyle(color: Colors.white, fontSize: 14),
+                    const SizedBox(height: 2),
+                    Text(fileName, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                   ] else
-                    Text('Tap to select file', style: TextStyle(color: Colors.white38, fontSize: 14)),
+                    const Text('Tap to select file', style: TextStyle(color: Colors.white38, fontSize: 14)),
                 ],
               ),
             ),
-            Icon(hasFile ? Icons.swap_horiz : Icons.folder_open, color: hasFile ? accentColor : Colors.white38, size: 20),
+            Icon(hasFile ? Icons.swap_horiz : Icons.folder_open_rounded, color: hasFile ? accentColor : Colors.white38, size: 20),
           ],
         ),
       ),
@@ -537,14 +574,14 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   Widget _buildTextField(TextEditingController controller, String hint, IconData icon) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
         prefixIcon: Icon(icon, color: Colors.white38, size: 20),
         filled: true,
-        fillColor: const Color(0xFF404040),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        fillColor: Colors.white.withValues(alpha: 0.06),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
@@ -553,7 +590,11 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   Widget _buildPreviewCard() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFF333333), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
       child: Row(
         children: [
           ClipRRect(
@@ -563,24 +604,24 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
                     errorBuilder: (_, __, ___) => _placeholderArt())
                 : _placeholderArt(),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Preview', style: TextStyle(color: Colors.white38, fontSize: 11)),
-                SizedBox(height: 2),
+                const Text('Preview', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                const SizedBox(height: 2),
                 Text(
                   _titleController.text.trim().isEmpty ? 'Song Title' : _titleController.text.trim(),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   _artistController.text.trim().isEmpty ? 'Artist' : _artistController.text.trim(),
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  style: const TextStyle(color: Colors.white60, fontSize: 12),
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(_audioFileName ?? '', style: const TextStyle(color: Colors.white30, fontSize: 11),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
@@ -594,8 +635,8 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   Widget _placeholderArt() {
     return Container(
       width: 56, height: 56,
-      decoration: BoxDecoration(color: const Color(0xFF404040), borderRadius: BorderRadius.circular(8)),
-      child: Icon(Icons.music_note, color: Colors.white30, size: 28),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
+      child: const Icon(Icons.music_note_rounded, color: Colors.white30, size: 28),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../song_model.dart';
-import 'theme.dart';
 
 class AlbumArt extends StatelessWidget {
   final Song song;
@@ -30,6 +29,20 @@ class AlbumArt extends StatelessWidget {
       }
     }
 
+    final effectiveRadius = borderRadius != null ? borderRadius! : BorderRadius.zero;
+    final themeColor = Theme.of(context).iconTheme.color;
+    final iconColor = themeColor != null
+        ? themeColor.withValues(alpha: 0.54)
+        : Colors.white54;
+
+    Widget placeholder() {
+      return Container(
+        color: Theme.of(context).cardColor,
+        alignment: Alignment.center,
+        child: Icon(Icons.music_note, color: iconColor, size: iconSize),
+      );
+    }
+
     return Container(
       width: width,
       height: height,
@@ -38,14 +51,15 @@ class AlbumArt extends StatelessWidget {
         borderRadius: borderRadius,
       ),
       child: ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.zero,
+        borderRadius: effectiveRadius,
         child: imageProvider == null
-            ? Icon(Icons.music_note, color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.54), size: iconSize)
+            ? placeholder()
             : Image(
                 image: imageProvider,
                 fit: BoxFit.cover,
                 width: width,
                 height: height,
+                errorBuilder: (context, error, stackTrace) => placeholder(),
               ),
       ),
     );

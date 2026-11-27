@@ -8,14 +8,14 @@ class ApiService {
   
   static const String baseUrl = 'https://jiosaavn-api2.arjunktp88.workers.dev';
 
-  Future<List<Song>> searchSongs(String query, {int limit = 10, int page = 1}) async {
+  Future<List<Song>> searchSongs(String query, {int limit = 20, int page = 1}) async {
     try {
       final url = Uri.parse('$baseUrl/api/search/songs?query=${Uri.encodeComponent(query)}&limit=$limit&page=$page');
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      final response = await http.get(url, headers: {'User-Agent': 'Mozilla/5.0'}).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['data'] != null && data['data']['results'] != null) {
+        if (data != null && data['data'] != null && data['data']['results'] != null) {
           final List items = data['data']['results'];
           if (items.isNotEmpty) {
             final List<Song> songs = [];
@@ -45,6 +45,42 @@ class ApiService {
     }
     
     // Return empty list to trigger the "Couldn't reach..." message
+    return [];
+  }
+
+  /// Attempts to fetch suggestions/recommendations for a song.
+  /// If the endpoint returns 500 or is unavailable, returns an empty list safely.
+  Future<List<Song>> getSongSuggestions(String songId, {int limit = 15}) async {
+    if (songId.isEmpty) return [];
+    try {
+      final url = Uri.parse('$baseUrl/api/songs/$songId/suggestions?limit=$limit');
+      final response = await http.get(url, headers: {'User-Agent': 'Mozilla/5.0'}).timeout(const Duration(seconds: 6));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data != null && data['data'] != null) {
+          final dynamic rawList = data['data'];
+          if (rawList is List && rawList.isNotEmpty) {
+            final List<Song> songs = [];
+            for (final item in rawList) {
+              if (item != null && item is Map<String, dynamic>) {
+                try {
+                  final song = Song.fromMap(item);
+                  if (song.videoId.startsWith('http')) {
+                    _urlCache[song.id] = song.videoId;
+                  }
+                  songs.add(song);
+                } catch (e) {
+                  debugPrint('Error parsing suggestion: $e');
+                }
+              }
+            }
+            return songs;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('JioSaavn suggestions endpoint error: $e');
+    }
     return [];
   }
 

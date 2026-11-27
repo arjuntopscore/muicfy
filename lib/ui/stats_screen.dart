@@ -1,9 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../music_provider.dart';
 import '../song_history_event.dart';
 import 'theme.dart';
 import 'artist_screen.dart';
+import 'apple_music_widgets.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -18,6 +22,7 @@ class StatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<MusicProvider>();
     final directors = provider.topMusicDirectors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final history = provider.playbackHistory.where((e) => !_isLocalEvent(e)).toList();
 
@@ -53,47 +58,60 @@ class StatsScreen extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
     final topTracks = sortedTracks.take(10).toList();
 
+    final textColor = isDark ? Colors.white : const Color(0xFF1C1C1E);
+    final subtextColor = isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF6E6E73);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       body: history.isEmpty
-          ? _buildEmptyState(context)
+          ? _buildEmptyState(context, isDark, textColor, subtextColor)
           : CustomScrollView(
+              physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverAppBar(
-                  expandedHeight: 220,
+                  expandedHeight: 240,
                   pinned: true,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  backgroundColor: isDark ? const Color(0xFF0F1420) : Colors.white,
+                  elevation: 0,
+                  leading: FrostedCircleButton(
+                    icon: CupertinoIcons.chevron_back,
+                    size: 38,
+                    iconSize: 20,
+                    iconColor: textColor,
+                    onPressed: () => Navigator.pop(context),
+                  ),
                   flexibleSpace: FlexibleSpaceBar(
                     titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
                     title: Text(
-                      'Your Wrapped',
+                      'Replay & Stats',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        color: textColor,
                       ),
                     ),
-                    background: _buildHeroHeader(context, totalTimeStr),
+                    background: _buildHeroHeader(context, totalTimeStr, isDark),
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildStatsRow(
                         context,
+                        isDark: isDark,
                         totalSeconds: totalSeconds,
                         totalArtists: topArtists.length,
                         totalTracks: trackCounts.length,
                       ),
                       const SizedBox(height: 32),
-                      _buildSectionHeader(context, 'Top Music Directors', 'Tap to explore'),
+                      _buildSectionHeader(context, 'Top Music Directors', 'Tap to explore', textColor, subtextColor),
                       const SizedBox(height: 16),
-                      _buildTopArtistsStrip(context, topArtists),
+                      _buildTopArtistsStrip(context, topArtists, textColor, subtextColor),
                       const SizedBox(height: 32),
-                      _buildSectionHeader(context, 'Most Played', '${topTracks.length} tracks'),
+                      _buildSectionHeader(context, 'Most Played', '${topTracks.length} tracks', textColor, subtextColor),
                       const SizedBox(height: 12),
-                      _buildTopTracksList(context, topTracks, trackDetails),
+                      _buildTopTracksList(context, topTracks, trackDetails, isDark, textColor, subtextColor),
                     ]),
                   ),
                 ),
@@ -102,7 +120,7 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, bool isDark, Color textColor, Color subtextColor) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -115,27 +133,31 @@ class StatsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [AppTheme.accentColor1.withOpacity(0.25), AppTheme.accentColor2.withOpacity(0.1)],
+                  colors: [
+                    AppTheme.accentColor1.withValues(alpha: 0.25),
+                    AppTheme.accentColor2.withValues(alpha: 0.10),
+                  ],
                 ),
               ),
-              child: Icon(Icons.headphones_rounded, size: 48, color: AppTheme.accentColor1),
+              child: const Icon(CupertinoIcons.headphones, size: 48, color: AppTheme.accentColor1),
             ),
             const SizedBox(height: 20),
             Text(
-              'No stats yet',
+              'No listening stats yet',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Listen to music and watch your wrapped come to life.',
+              'Start playing your favourite music and watch\nyour personalized Replay come to life.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                color: subtextColor,
                 fontSize: 14,
+                height: 1.4,
               ),
             ),
           ],
@@ -144,45 +166,45 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroHeader(BuildContext context, String totalTimeStr) {
+  Widget _buildHeroHeader(BuildContext context, String totalTimeStr, bool isDark) {
     return Stack(
       fit: StackFit.expand,
       children: [
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF8E2DE2),
-                const Color(0xFF4A00E0),
-                AppTheme.accentColor1,
+                Color(0xFF8E2DE2),
+                Color(0xFF4A00E0),
+                Color(0xFFFA2D48),
               ],
-              stops: const [0.0, 0.5, 1.0],
+              stops: [0.0, 0.55, 1.0],
             ),
           ),
         ),
         Positioned(
-          top: -40,
-          right: -40,
+          top: -30,
+          right: -30,
           child: Container(
-            width: 180,
-            height: 180,
+            width: 170,
+            height: 170,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.10),
             ),
           ),
         ),
         Positioned(
-          bottom: -30,
-          left: -30,
+          bottom: -20,
+          left: -20,
           child: Container(
-            width: 140,
-            height: 140,
+            width: 130,
+            height: 130,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha: 0.08),
             ),
           ),
         ),
@@ -193,10 +215,10 @@ class StatsScreen extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Theme.of(context).scaffoldBackgroundColor.withOpacity(0.0),
-                Theme.of(context).scaffoldBackgroundColor,
+                (isDark ? Colors.black : const Color(0xFFF2F2F7)).withValues(alpha: 0.0),
+                isDark ? Colors.black : const Color(0xFFF2F2F7),
               ],
-              stops: const [0.0, 0.6, 1.0],
+              stops: const [0.0, 0.65, 1.0],
             ),
           ),
         ),
@@ -207,19 +229,32 @@ class StatsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'TOTAL LISTENING',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.2,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'TOTAL LISTENING TIME',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
               Text(
                 totalTimeStr,
-                style: const TextStyle(
+                style: GoogleFonts.plusJakartaSans(
                   color: Colors.white,
                   fontSize: 44,
                   fontWeight: FontWeight.w900,
@@ -234,41 +269,52 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(BuildContext context,
-      {required int totalSeconds, required int totalArtists, required int totalTracks}) {
+  Widget _buildStatsRow(
+    BuildContext context, {
+    required bool isDark,
+    required int totalSeconds,
+    required int totalArtists,
+    required int totalTracks,
+  }) {
     return Row(
       children: [
-        _miniStatCard(context, Icons.person_outline_rounded, '$totalArtists', 'Artists'),
+        _miniStatCard(context, isDark, CupertinoIcons.person_2_fill, '$totalArtists', 'Artists'),
         const SizedBox(width: 10),
-        _miniStatCard(context, Icons.music_note_rounded, '$totalTracks', 'Tracks'),
+        _miniStatCard(context, isDark, CupertinoIcons.music_note_list, '$totalTracks', 'Tracks'),
         const SizedBox(width: 10),
-        _miniStatCard(context, Icons.local_fire_department_rounded, '${(totalSeconds / 60).ceil()}', 'Minutes'),
+        _miniStatCard(context, isDark, CupertinoIcons.flame_fill, '${(totalSeconds / 60).ceil()}', 'Minutes'),
       ],
     );
   }
 
-  Widget _miniStatCard(BuildContext context, IconData icon, String value, String label) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _miniStatCard(BuildContext context, bool isDark, IconData icon, String value, String label) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: isDark ? const Color(0xFF141926) : Colors.white,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: AppTheme.accentColor1),
-            const SizedBox(height: 6),
+            Icon(icon, size: 22, color: AppTheme.accentColor1),
+            const SizedBox(height: 8),
             Text(
               value,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: isDark ? Colors.white : const Color(0xFF1C1C1E),
                 letterSpacing: -0.5,
               ),
             ),
@@ -276,9 +322,9 @@ class StatsScreen extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white60 : const Color(0xFF6E6E73),
               ),
             ),
           ],
@@ -287,7 +333,7 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
+  Widget _buildSectionHeader(BuildContext context, String title, String subtitle, Color textColor, Color subtextColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -298,29 +344,30 @@ class StatsScreen extends StatelessWidget {
             fontSize: 22,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: textColor,
           ),
         ),
         Text(
           subtitle,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.5,
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+            color: subtextColor,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTopArtistsStrip(BuildContext context, List<_DirectorEntry> topArtists) {
+  Widget _buildTopArtistsStrip(BuildContext context, List<_DirectorEntry> topArtists, Color textColor, Color subtextColor) {
     if (topArtists.isEmpty) {
       return _emptyTile(context, 'No music director plays tracked yet.');
     }
     return SizedBox(
-      height: 180,
+      height: 185,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 2),
         itemCount: topArtists.length,
         separatorBuilder: (_, __) => const SizedBox(width: 14),
@@ -331,6 +378,8 @@ class StatsScreen extends StatelessWidget {
             plays: entry.plays,
             rank: index + 1,
             imageUrl: entry.imageUrl,
+            textColor: textColor,
+            subtextColor: subtextColor,
             onTap: () {
               Navigator.push(
                 context,
@@ -348,20 +397,33 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopTracksList(BuildContext context, List<MapEntry<String, int>> topTracks,
-      Map<String, SongHistoryEvent> trackDetails) {
+  Widget _buildTopTracksList(
+    BuildContext context,
+    List<MapEntry<String, int>> topTracks,
+    Map<String, SongHistoryEvent> trackDetails,
+    bool isDark,
+    Color textColor,
+    Color subtextColor,
+  ) {
     if (topTracks.isEmpty) {
       return _emptyTile(context, 'No tracks tracked yet.');
     }
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final maxPlays = topTracks.first.value;
+
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        color: isDark ? const Color(0xFF141926) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ListView.separated(
         shrinkWrap: true,
@@ -369,7 +431,7 @@ class StatsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: topTracks.length,
         separatorBuilder: (context, index) => Divider(
-          color: Theme.of(context).dividerColor.withOpacity(0.08),
+          color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04),
           height: 1,
           indent: 20,
           endIndent: 20,
@@ -381,7 +443,7 @@ class StatsScreen extends StatelessWidget {
           final progress = plays / maxPlays;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 SizedBox(
@@ -390,13 +452,13 @@ class StatsScreen extends StatelessWidget {
                     '${index + 1}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: index < 3 ? AppTheme.accentColor1 : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      color: index < 3 ? AppTheme.accentColor1 : subtextColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,18 +468,18 @@ class StatsScreen extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          color: textColor,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: 14.5,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         details.artist,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                          color: subtextColor,
                           fontSize: 12,
                         ),
                       ),
@@ -428,30 +490,42 @@ class StatsScreen extends StatelessWidget {
                           value: progress,
                           minHeight: 4,
                           backgroundColor: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.black.withOpacity(0.06),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.06),
                           valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentColor1),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  '$plays',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                const SizedBox(width: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  'x',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$plays',
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        'plays',
+                        style: TextStyle(
+                          color: subtextColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -468,13 +542,13 @@ class StatsScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        color: isDark ? const Color(0xFF141926) : Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+          color: isDark ? Colors.white60 : Colors.black54,
           fontSize: 13,
         ),
       ),
@@ -503,6 +577,8 @@ class _ArtistTile extends StatelessWidget {
   final int plays;
   final int rank;
   final String imageUrl;
+  final Color textColor;
+  final Color subtextColor;
   final VoidCallback onTap;
 
   const _ArtistTile({
@@ -510,12 +586,16 @@ class _ArtistTile extends StatelessWidget {
     required this.plays,
     required this.rank,
     required this.imageUrl,
+    required this.textColor,
+    required this.subtextColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasImage = imageUrl.isNotEmpty && imageUrl.startsWith('http');
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -530,26 +610,24 @@ class _ArtistTile extends StatelessWidget {
                   height: 110,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentColor1.withOpacity(0.25),
+                        color: AppTheme.accentColor1.withValues(alpha: 0.28),
                         blurRadius: 14,
-                        spreadRadius: 1,
                         offset: const Offset(0, 6),
                       ),
                     ],
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [AppTheme.accentColor1, AppTheme.accentColor2],
+                      colors: [Color(0xFFFA2D48), Color(0xFFFF375F)],
                     ),
                   ),
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(2.5),
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Theme.of(context).cardColor,
+                      color: isDark ? const Color(0xFF141926) : Colors.white,
                       image: hasImage
                           ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
                           : null,
@@ -557,30 +635,43 @@ class _ArtistTile extends StatelessWidget {
                     child: hasImage
                         ? null
                         : Icon(
-                            Icons.person_rounded,
+                            CupertinoIcons.person_fill,
                             size: 46,
-                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                            color: subtextColor,
                           ),
                   ),
                 ),
                 Positioned(
-                  left: -4,
-                  top: -4,
+                  left: -2,
+                  top: -2,
                   child: Container(
-                    width: 30,
-                    height: 30,
+                    width: 28,
+                    height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      border: Border.all(color: AppTheme.accentColor1, width: 2),
+                      color: isDark ? Colors.black : Colors.white,
+                      border: Border.all(
+                        color: rank == 1
+                            ? const Color(0xFFFFD700)
+                            : (rank == 2 ? const Color(0xFFC0C0C0) : const Color(0xFFCD7F32)),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
                     child: Text(
                       '$rank',
-                      style: const TextStyle(
-                        color: AppTheme.accentColor1,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
+                      style: TextStyle(
+                        color: rank == 1
+                            ? const Color(0xFFFFD700)
+                            : (rank == 2 ? const Color(0xFFC0C0C0) : const Color(0xFFCD7F32)),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -594,7 +685,7 @@ class _ArtistTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: textColor,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
@@ -603,7 +694,7 @@ class _ArtistTile extends StatelessWidget {
             Text(
               '$plays plays',
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.65),
+                color: subtextColor,
                 fontWeight: FontWeight.w500,
                 fontSize: 11,
               ),

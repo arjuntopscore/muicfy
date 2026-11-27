@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../music_provider.dart';
 import '../api_service.dart';
 import '../song_model.dart';
 import 'theme.dart';
 import 'album_art.dart';
+import 'song_action_sheet.dart';
+import 'apple_music_widgets.dart';
 
 /// A screen that shows songs for a single predefined library category.
 /// Loads 30 songs initially, then auto-loads 10 more on scroll.
@@ -303,8 +306,8 @@ class _BrowseLibraryScreenState extends State<BrowseLibraryScreen> {
                       style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54), fontSize: 12),
                     ),
                     trailing: IconButton(
-                      icon: Icon(Icons.more_vert, color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.54)),
-                      onPressed: () => _showAddToPlaylistSheet(song),
+                      icon: const Icon(CupertinoIcons.ellipsis, size: 18),
+                      onPressed: () => SongActionSheet.show(context, song),
                     ),
                     onTap: () {
                       final provider = context.read<MusicProvider>();

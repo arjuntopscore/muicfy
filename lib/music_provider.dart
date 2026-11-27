@@ -471,7 +471,8 @@ class MusicProvider extends ChangeNotifier {
   Future<void> deleteLocalSong(Song song) async {
     localLibrary.removeWhere((s) => s.id == song.id);
     await saveLocalLibrary();
-    if (currentSong?.id == song.id) {
+    final active = currentSong;
+    if (active != null && active.id == song.id) {
       audioPlayer.stop();
       currentSong = null;
     }
@@ -573,6 +574,141 @@ class MusicProvider extends ChangeNotifier {
   bool isShuffleEnabled = false;
   PlaybackRepeatMode repeatMode = PlaybackRepeatMode.off;
 
+  String? currentSearchQuery;
+  int currentSearchPage = 1;
+  String? currentGenre;
+  bool _isLoadingRecommendations = false;
+
+  /// Detects musical genre/mood keyword from search query, album, or title.
+  static String? detectGenre(String text) {
+    if (text.isEmpty) return null;
+    final lower = text.toLowerCase();
+    const genres = [
+      'romantic', 'love', 'melody', 'melodies', 'feel good',
+      'sad', 'heartbreak', 'alone',
+      'party', 'dance', 'club', 'fast',
+      'lofi', 'chill', 'relax', 'sleep',
+      'acoustic', 'unplugged',
+      'classical', 'carnatic', 'hindustani', 'devotional', 'bhajan',
+      'rock', 'metal', 'pop', 'jazz',
+      'rap', 'hip hop', 'hiphop',
+      'folk', 'kuthu', 'gaana', 'mass', 'bgm',
+    ];
+    for (final g in genres) {
+      if (lower.contains(g)) {
+        if (g == 'love' || g == 'feel good') return 'romantic';
+        if (g == 'melodies') return 'melody';
+        if (g == 'heartbreak' || g == 'alone') return 'sad';
+        if (g == 'club' || g == 'fast') return 'party';
+        if (g == 'relax' || g == 'sleep') return 'chill';
+        if (g == 'hiphop') return 'hip hop';
+        return g;
+      }
+    }
+    return null;
+  }
+
+  /// Checks if a search query represents a broad genre, mood, language, or collection
+  /// (e.g. "romantic malayalam", "tamil hits", "melody songs", "party")
+  /// rather than a search for a specific individual song title (e.g. "selfi pulla").
+  static bool isBroadSearchQuery(String query) {
+    if (query.trim().isEmpty) return false;
+    final lower = query.toLowerCase().trim();
+
+    // 1. Check if query contains any recognized musical genre or mood
+    if (detectGenre(lower) != null) {
+      return true;
+    }
+
+    // 2. Check for collection or playlist terms
+    const collectionTerms = [
+      'hits', 'playlist', 'collection', 'jukebox',
+      'top songs', 'best songs', 'latest songs', 'popular',
+      'all songs', 'audio songs', 'hit songs', 'tracks',
+    ];
+    for (final term in collectionTerms) {
+      if (lower.contains(term)) {
+        return true;
+      }
+    }
+
+    // 3. Check if query is just a language name or language + 'songs'/'music'
+    // (e.g. 'tamil', 'malayalam', 'hindi songs', 'punjabi music')
+    const languages = [
+      'malayalam', 'tamil', 'hindi', 'telugu', 'kannada',
+      'english', 'punjabi', 'bengali', 'marathi', 'gujarati', 'bhojpuri',
+    ];
+    final words = lower.split(RegExp(r'\s+'));
+    if (words.length <= 2) {
+      bool hasLanguage = false;
+      bool allAllowed = true;
+      for (final w in words) {
+        if (languages.contains(w)) {
+          hasLanguage = true;
+        } else if (w != 'songs' && w != 'song' && w != 'music' && w != 'track' && w != 'tracks') {
+          allAllowed = false;
+        }
+      }
+      if (hasLanguage && allAllowed) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Checks whether the search query was targeting a specific song
+  /// (e.g. "selfi pulla", "selfie", "aaradhike").
+  static bool isSearchForSpecificSong(String query, Song song) {
+    if (query.trim().isEmpty) return false;
+    // Broad queries like "romantic malayalam" are collections, not specific songs
+    if (isBroadSearchQuery(query)) {
+      return false;
+    }
+
+    final cleanQuery = query.toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+        
+    final cleanTitle = song.title.toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    if (cleanQuery.isEmpty || cleanTitle.isEmpty) return false;
+
+    // Direct substring match either way (e.g. "selfie pulla" in "Selfie Pulla")
+    if (cleanTitle.contains(cleanQuery) || cleanQuery.contains(cleanTitle)) {
+      return true;
+    }
+
+    // Match without common search filler words like "song", "audio", "video"
+    final queryWords = cleanQuery.split(' ')
+        .where((w) => w != 'song' && w != 'songs' && w != 'audio' && w != 'video' && w != 'full' && w != 'mp3' && w != 'track')
+        .toList();
+    if (queryWords.isEmpty) return false;
+
+    int matchedWords = 0;
+    for (final qw in queryWords) {
+      if (qw.length >= 3 && cleanTitle.contains(qw)) {
+        matchedWords++;
+      } else if (qw.length >= 4) {
+        // Handle common typos like selfi vs selfie
+        final prefix = qw.substring(0, qw.length - 1);
+        if (cleanTitle.contains(prefix)) {
+          matchedWords++;
+        }
+      }
+    }
+
+    if (matchedWords >= 1 && (matchedWords / queryWords.length) >= 0.5) {
+      return true;
+    }
+
+    return false;
+  }
+
   void toggleShuffle() {
     isShuffleEnabled = !isShuffleEnabled;
     if (isShuffleEnabled && currentPlaylist.isNotEmpty) {
@@ -624,38 +760,221 @@ class MusicProvider extends ChangeNotifier {
     }
   }
 
+  /// Pre-populates the queue with similar songs in the same language and genre/mood
+  /// (from same album, same artist, and language top hits).
+  Future<void> _loadSongRadio(Song seedSong) async {
+    try {
+      final existingIds = originalPlaylist.map((s) => s.id).toSet();
+      List<Song> radioSongs = [];
+
+      // 1. Same Album search if available (e.g. "Kaththi tamil")
+      if (seedSong.album.isNotEmpty &&
+          seedSong.album.toLowerCase() != 'single' &&
+          seedSong.album.toLowerCase() != 'unknown') {
+        String albumQuery = seedSong.album;
+        if (seedSong.language.isNotEmpty && seedSong.language != 'unknown') {
+          albumQuery = '${seedSong.album} ${seedSong.language}';
+        }
+        final albumResults = await _apiService.searchSongs(albumQuery, limit: 15);
+        for (final s in albumResults) {
+          if (!existingIds.contains(s.id)) {
+            if (seedSong.language == 'unknown' || s.language == 'unknown' || s.language == seedSong.language) {
+              radioSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // 2. Primary Artist + Language (e.g. "Anirudh Ravichander tamil")
+      final artistParts = seedSong.artist.split(',');
+      String primaryArtist = artistParts.isNotEmpty ? artistParts[0].trim() : '';
+      if (primaryArtist.toLowerCase() != 'unknown' &&
+          primaryArtist.toLowerCase() != 'various artists' &&
+          primaryArtist.isNotEmpty) {
+        String artistQuery = primaryArtist;
+        if (seedSong.language.isNotEmpty && seedSong.language != 'unknown') {
+          artistQuery = '$primaryArtist ${seedSong.language}';
+        }
+        final artistResults = await _apiService.searchSongs(artistQuery, limit: 15);
+        for (final s in artistResults) {
+          if (!existingIds.contains(s.id)) {
+            if (seedSong.language == 'unknown' || s.language == 'unknown' || s.language == seedSong.language) {
+              radioSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // 3. Language Hits in the same language (e.g. "tamil hits")
+      if (radioSongs.length < 10 && seedSong.language.isNotEmpty && seedSong.language != 'unknown') {
+        final languageResults = await _apiService.searchSongs('${seedSong.language} hits', limit: 15);
+        for (final s in languageResults) {
+          if (!existingIds.contains(s.id)) {
+            if (s.language == 'unknown' || s.language == seedSong.language) {
+              radioSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // Only append if the currently playing song is still the seedSong
+      final activeSong = currentSong;
+      if (activeSong != null && activeSong.id == seedSong.id && radioSongs.isNotEmpty) {
+        originalPlaylist.addAll(radioSongs);
+        currentPlaylist.addAll(radioSongs);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error loading song radio: $e");
+    }
+  }
+
   Future<void> _fetchAndPlayRecommendations() async {
+    if (_isLoadingRecommendations) return;
     final current = currentSong;
     if (current == null) return;
 
+    _isLoadingRecommendations = true;
     isResolvingAudio = true;
     notifyListeners();
 
     bool startedPlayingNewSong = false;
 
     try {
-      String query = current.artist;
-      if (query == 'Unknown' || query == 'Various Artists') {
-        query = current.title;
-      }
-      if (current.language.isNotEmpty && current.language != 'unknown') {
-        query += ' ${current.language}';
-      }
-
-      // Search for more songs by the current artist/language
-      final results = await _apiService.searchSongs(query, limit: 20);
-      
-      // Filter out songs already in the playlist and prioritize same language
       final existingIds = originalPlaylist.map((s) => s.id).toSet();
-      
-      List<Song> newSongs = results.where((s) => 
-        !existingIds.contains(s.id) && 
-        (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language)
-      ).toList();
+      List<Song> newSongs = [];
 
-      // Fallback if language strict filtering leaves us with nothing
+      // ── Strategy 1: If user was playing from a broad search, load next page ──
+      final activeQuery = currentSearchQuery;
+      if (activeQuery != null && activeQuery.isNotEmpty && isBroadSearchQuery(activeQuery)) {
+        currentSearchPage++;
+        final nextPageResults = await _apiService.searchSongs(
+          activeQuery,
+          limit: 20,
+          page: currentSearchPage,
+        );
+        for (final s in nextPageResults) {
+          if (!existingIds.contains(s.id)) {
+            if (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language) {
+              newSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // ── Strategy 2: Maintain same genre (e.g. "malayalam romantic hits") ──
+      // This ensures that when search results end, the next auto-played songs
+      // remain strictly in the same genre (e.g. romantic) as the current search!
+      final activeGenre = currentGenre;
+      if (newSongs.isEmpty && activeGenre != null && activeGenre.isNotEmpty) {
+        String genreQuery = '';
+        if (current.language.isNotEmpty && current.language != 'unknown') {
+          genreQuery = '${current.language} $activeGenre hits';
+        } else {
+          genreQuery = '$activeGenre hit songs';
+        }
+
+        final genreResults = await _apiService.searchSongs(genreQuery, limit: 20);
+        for (final s in genreResults) {
+          if (!existingIds.contains(s.id)) {
+            if (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language) {
+              newSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // ── Strategy 3: Check same album (e.g. "Kaththi tamil") ──
+      if (newSongs.isEmpty &&
+          current.album.isNotEmpty &&
+          current.album.toLowerCase() != 'single' &&
+          current.album.toLowerCase() != 'unknown') {
+        String albumQuery = current.album;
+        if (current.language.isNotEmpty && current.language != 'unknown') {
+          albumQuery = '${current.album} ${current.language}';
+        }
+        final albumResults = await _apiService.searchSongs(albumQuery, limit: 20);
+        for (final s in albumResults) {
+          if (!existingIds.contains(s.id)) {
+            if (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language) {
+              newSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // ── Strategy 4: Check API suggestions/recommendations endpoint ──
+      if (newSongs.isEmpty && current.id.isNotEmpty) {
+        final suggestions = await _apiService.getSongSuggestions(current.id, limit: 15);
+        for (final s in suggestions) {
+          if (!existingIds.contains(s.id)) {
+            if (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language) {
+              newSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
+      }
+
+      // ── Strategy 5: Load similar songs by primary artist + active genre + language ──
       if (newSongs.isEmpty) {
-        newSongs = results.where((s) => !existingIds.contains(s.id)).toList();
+        final artistParts = current.artist.split(',');
+        String primaryArtist = artistParts.isNotEmpty ? artistParts[0].trim() : '';
+        if (primaryArtist.toLowerCase() == 'unknown' || primaryArtist.toLowerCase() == 'various artists') {
+          primaryArtist = '';
+        }
+
+        String searchTerms = '';
+        if (primaryArtist.isNotEmpty) {
+          searchTerms = primaryArtist;
+        }
+
+        if (activeGenre != null && activeGenre.isNotEmpty) {
+          if (searchTerms.isNotEmpty) {
+            searchTerms = '$searchTerms $activeGenre';
+          } else {
+            searchTerms = activeGenre;
+          }
+        }
+
+        if (current.language.isNotEmpty && current.language != 'unknown') {
+          if (searchTerms.isNotEmpty) {
+            searchTerms = '$searchTerms ${current.language}';
+          } else {
+            searchTerms = '${current.language} songs';
+          }
+        }
+
+        if (searchTerms.isNotEmpty) {
+          final artistResults = await _apiService.searchSongs(searchTerms, limit: 20);
+          for (final s in artistResults) {
+            if (!existingIds.contains(s.id)) {
+              if (current.language == 'unknown' || s.language == 'unknown' || s.language == current.language) {
+                newSongs.add(s);
+                existingIds.add(s.id);
+              }
+            }
+          }
+        }
+      }
+
+      // ── Strategy 6: Language fallback (keeps same language strictly, no random genre/language jumps) ──
+      if (newSongs.isEmpty && current.language.isNotEmpty && current.language != 'unknown') {
+        final languageFallback = await _apiService.searchSongs('${current.language} hit songs', limit: 20);
+        for (final s in languageFallback) {
+          if (!existingIds.contains(s.id)) {
+            if (s.language == 'unknown' || s.language == current.language) {
+              newSongs.add(s);
+              existingIds.add(s.id);
+            }
+          }
+        }
       }
 
       if (newSongs.isNotEmpty) {
@@ -665,18 +984,17 @@ class MusicProvider extends ChangeNotifier {
 
         originalPlaylist.addAll(newSongs);
         currentPlaylist.addAll(newSongs);
-        
-        // Play the very next song we just added
-        playSong(currentPlaylist[currentPlaylistIndex + 1]);
-        startedPlayingNewSong = true;
-      } else {
-        // Fallback: If no recommendations found, stop or restart
+
+        // Play the very next song we just appended
+        if (currentPlaylistIndex + 1 < currentPlaylist.length) {
+          playSong(currentPlaylist[currentPlaylistIndex + 1]);
+          startedPlayingNewSong = true;
+        }
       }
     } catch (e) {
       debugPrint("Error fetching recommendations: $e");
     } finally {
-      // Only clear loading state if we didn't start a new song,
-      // because playSong() will manage its own loading state.
+      _isLoadingRecommendations = false;
       if (!startedPlayingNewSong) {
         isResolvingAudio = false;
         notifyListeners();
@@ -696,26 +1014,114 @@ class MusicProvider extends ChangeNotifier {
     }
   }
 
-  void playSong(Song song, {List<Song>? playlist}) async {
+  void playSong(Song song, {List<Song>? playlist, String? searchQuery}) async {
     // Debounce rapid taps
     if (DateTime.now().difference(_lastPlayTap).inMilliseconds < 1500) {
       return;
     }
     _lastPlayTap = DateTime.now();
 
+    bool isSpecific = false;
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      isSpecific = isSearchForSpecificSong(searchQuery, song);
+
+      // When playing from a search, turn off shuffle so the playlist starts
+      // from the tapped song in exact predictable order
+      isShuffleEnabled = false;
+
+      if (isSpecific) {
+        // Specific song query (e.g. "selfi pulla", "aaradhike")
+        // Clear search query so autoplay recommendations do NOT re-search the song title
+        currentSearchQuery = null;
+        currentSearchPage = 1;
+
+        final genreFromAlbum = detectGenre(song.album);
+        if (genreFromAlbum != null) {
+          currentGenre = genreFromAlbum;
+        } else {
+          currentGenre = detectGenre(song.title);
+        }
+      } else {
+        // Broad genre / category / playlist query (e.g. "romantic malayalam", "tamil hits")
+        currentSearchQuery = searchQuery;
+        currentSearchPage = 1;
+
+        final genreFromSearch = detectGenre(searchQuery);
+        if (genreFromSearch != null) {
+          currentGenre = genreFromSearch;
+        } else {
+          final genreFromAlbum = detectGenre(song.album);
+          if (genreFromAlbum != null) {
+            currentGenre = genreFromAlbum;
+          } else {
+            currentGenre = detectGenre(song.title);
+          }
+        }
+      }
+    } else if (playlist != null) {
+      // Reset search query if another explicit playlist is loaded
+      currentSearchQuery = null;
+      currentSearchPage = 1;
+
+      final genreFromAlbum = detectGenre(song.album);
+      if (genreFromAlbum != null) {
+        currentGenre = genreFromAlbum;
+      } else {
+        currentGenre = detectGenre(song.title);
+      }
+    }
+
     if (playlist != null) {
-      originalPlaylist = List.from(playlist);
+      List<Song> filteredList;
+      if (isSpecific) {
+        // For a specific song search like "selfi pulla", do NOT queue up unrelated keyword
+        // collisions in other languages/movies from search results.
+        // Only keep other songs from the exact same album if present, otherwise just [song].
+        final sameAlbumSongs = playlist.where((s) {
+          if (s.id == song.id) return true;
+          if (song.album.isNotEmpty && song.album.toLowerCase() != 'single' && song.album.toLowerCase() != 'unknown') {
+            return s.album.toLowerCase() == song.album.toLowerCase() &&
+                   (s.language == 'unknown' || song.language == 'unknown' || s.language == song.language);
+          }
+          return false;
+        }).toList();
+
+        if (sameAlbumSongs.isNotEmpty) {
+          filteredList = sameAlbumSongs;
+        } else {
+          filteredList = [song];
+        }
+      } else {
+        // Broad search or existing playlist:
+        // Filter out conflicting languages so foreign language tracks never pollute the queue!
+        if (song.language.isNotEmpty && song.language != 'unknown') {
+          filteredList = playlist.where((s) {
+            if (s.id == song.id) return true;
+            return s.language == 'unknown' || s.language.isEmpty || s.language == song.language;
+          }).toList();
+        } else {
+          filteredList = List.from(playlist);
+        }
+      }
+
+      originalPlaylist = List.from(filteredList);
       if (isShuffleEnabled) {
-        currentPlaylist = List.from(playlist);
+        currentPlaylist = List.from(filteredList);
         currentPlaylist.shuffle();
         currentPlaylist.removeWhere((s) => s.id == song.id);
         currentPlaylist.insert(0, song);
       } else {
-        currentPlaylist = List.from(playlist);
+        currentPlaylist = List.from(filteredList);
       }
       currentPlaylistIndex = currentPlaylist.indexWhere((s) => s.id == song.id);
-    } else if (currentPlaylist.isNotEmpty) {
+      if (currentPlaylistIndex == -1) currentPlaylistIndex = 0;
+    } else {
+      if (!currentPlaylist.any((s) => s.id == song.id)) {
+        currentPlaylist.add(song);
+        originalPlaylist.add(song);
+      }
       currentPlaylistIndex = currentPlaylist.indexWhere((s) => s.id == song.id);
+      if (currentPlaylistIndex == -1) currentPlaylistIndex = 0;
     }
 
     currentSong = song;
@@ -723,6 +1129,11 @@ class MusicProvider extends ChangeNotifier {
     
     isResolvingAudio = true;
     notifyListeners();
+
+    // If it's a specific song search or queue only has 1 song, proactively populate Song Radio
+    if (isSpecific || currentPlaylist.length <= 1) {
+      _loadSongRadio(song);
+    }
     
     try {
       final mediaItem = MediaItem(
@@ -735,7 +1146,10 @@ class MusicProvider extends ChangeNotifier {
       );
 
       // Update the notification with current song info
-      _audioHandler?.updateMediaItem(mediaItem);
+      final handler = _audioHandler;
+      if (handler != null) {
+        handler.updateMediaItem(mediaItem);
+      }
       
       String streamUrl = '';
       if (song.isLocal) {
@@ -757,20 +1171,26 @@ class MusicProvider extends ChangeNotifier {
         final actualDuration = audioPlayer.duration;
         if (actualDuration != null) {
           final updatedMediaItem = mediaItem.copyWith(duration: actualDuration);
-          _audioHandler?.updateMediaItem(updatedMediaItem);
+          final h = _audioHandler;
+          if (h != null) {
+            h.updateMediaItem(updatedMediaItem);
+          }
         }
         
         audioPlayer.play();
       }
     } catch (e) {
       debugPrint("Error loading audio source: $e");
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      final messengerState = scaffoldMessengerKey.currentState;
+      if (messengerState != null) {
+        messengerState.showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       isResolvingAudio = false;
       notifyListeners();
@@ -1002,6 +1422,24 @@ class MusicProvider extends ChangeNotifier {
       originalPlaylist.add(song);
       notifyListeners();
     }
+  }
+
+  /// Insert song directly after the currently playing song so it plays next
+  void playNextInQueue(Song song) {
+    currentPlaylist.removeWhere((s) => s.id == song.id);
+    if (currentPlaylistIndex >= 0 && currentPlaylistIndex < currentPlaylist.length) {
+      currentPlaylist.insert(currentPlaylistIndex + 1, song);
+    } else {
+      currentPlaylist.add(song);
+    }
+    notifyListeners();
+  }
+
+  /// Clear recently played history
+  void clearHistory() {
+    recentlyPlayed.clear();
+    playbackHistory.clear();
+    notifyListeners();
   }
 
   /// Sets the queue to a new list of songs and starts playing from [initialIndex]

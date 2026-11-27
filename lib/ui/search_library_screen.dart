@@ -169,7 +169,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _songs.isNotEmpty
-                          ? () => provider.playSong(_songs.first, playlist: _songs)
+                          ? () => provider.playSong(_songs.first, playlist: _songs, searchQuery: widget.query)
                           : null,
                       icon: Icon(Icons.play_arrow, color: Colors.black),
                       label: Text('Play All', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
@@ -301,7 +301,7 @@ class _SearchLibraryScreenState extends State<SearchLibraryScreen> {
                   ),
                   onTap: () {
                     provider.addToRecentSearches(song);
-                    provider.playSong(song, playlist: _songs);
+                    provider.playSong(song, playlist: _songs, searchQuery: widget.query);
                   },
                 );
               },

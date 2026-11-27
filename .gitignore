@@ -39,6 +39,13 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Scratch and test files
+test_*.dart
+test_*.mp4
+inspect_mp4.dart
+.agents/
+android/build/
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

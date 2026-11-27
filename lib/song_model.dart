@@ -6,6 +6,8 @@ class Song {
   final String videoId;
   final String language;
   final bool isLocal;
+  final bool isExplicit;
+  final String album;
 
   Song({
     required this.id,
@@ -15,6 +17,8 @@ class Song {
     required this.videoId,
     this.language = 'unknown',
     this.isLocal = false,
+    this.isExplicit = false,
+    this.album = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -26,11 +30,26 @@ class Song {
       'videoId': videoId,
       'language': language,
       'isLocal': isLocal,
+      'isExplicit': isExplicit,
+      'album': album,
     };
   }
 
   factory Song.fromMap(Map<String, dynamic> map) {
-    String parsedTitle = map['name']?.toString() ?? map['title']?.toString() ?? 'Unknown';
+    final rawName = map['name'];
+    final rawTitle = map['title'];
+    String parsedTitle = 'Unknown';
+    if (rawName != null) {
+      parsedTitle = rawName.toString();
+    } else if (rawTitle != null) {
+      parsedTitle = rawTitle.toString();
+    }
+    parsedTitle = parsedTitle
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#039;', "'")
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>');
     
     String parsedArtist = 'Unknown';
     if (map['artists'] != null && map['artists']['primary'] is List) {
@@ -58,6 +77,21 @@ class Song {
       parsedStream = (map['downloadUrl'] as List).last['url']?.toString() ?? '';
     }
 
+    final isExplicit = map['isExplicit'] == true ||
+        map['explicitContent'] == true ||
+        map['explicit'] == true ||
+        (map['explicitContent']?.toString().toLowerCase() == 'true') ||
+        (map['explicit']?.toString().toLowerCase() == 'true') ||
+        parsedTitle.toLowerCase().contains('(explicit)') ||
+        parsedTitle.toLowerCase().contains('[explicit]');
+
+    String parsedAlbum = '';
+    if (map['album'] is Map) {
+      parsedAlbum = map['album']['name']?.toString() ?? '';
+    } else {
+      parsedAlbum = map['album']?.toString() ?? '';
+    }
+
     return Song(
       id: map['id']?.toString() ?? '',
       title: parsedTitle,
@@ -68,6 +102,8 @@ class Song {
           : (map['videoId']?.toString() ?? map['streamUrl']?.toString() ?? ''),
       language: map['language']?.toString().toLowerCase() ?? 'unknown',
       isLocal: map['isLocal'] == true,
+      isExplicit: isExplicit,
+      album: parsedAlbum.isNotEmpty ? parsedAlbum : 'Single',
     );
   }
 }

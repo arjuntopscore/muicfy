@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:convert';
 import 'dart:ui';
 import 'dart:io';
 
@@ -16,6 +15,8 @@ import 'ui/search_tab.dart';
 import 'ui/library_tab.dart';
 import 'ui/offline_folder_screen.dart';
 import 'ui/mini_player.dart';
+import 'ui/desktop_sidebar.dart';
+import 'ui/desktop_player_bar.dart';
 import 'ui/welcome_screen.dart';
 
 import 'theme_provider.dart';
@@ -72,7 +73,7 @@ class _MusicAppState extends State<MusicApp> {
     final themeProvider = context.watch<ThemeProvider>();
     
     return MaterialApp(
-      title: 'NexTune',
+      title: 'Pattufy',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
@@ -124,32 +125,32 @@ class _RootScreenState extends State<RootScreen> {
       LibraryTab(onOfflineFolderTapped: _goToOfflineFolder),
     ];
 
-    final isDesktop = MediaQuery.of(context).size.width > 600;
+    final isDesktop = MediaQuery.of(context).size.width > 768;
 
-    Widget body = Row(
-      children: [
-        if (isDesktop)
-          NavigationRail(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: _onTabTapped,
-            labelType: NavigationRailLabelType.all,
-            destinations: const [
-              NavigationRailDestination(icon: Icon(CupertinoIcons.home), selectedIcon: Icon(CupertinoIcons.house_fill), label: Text('Home')),
-              NavigationRailDestination(icon: Icon(CupertinoIcons.search), selectedIcon: Icon(CupertinoIcons.search), label: Text('Search')),
-              NavigationRailDestination(icon: Icon(CupertinoIcons.music_albums), selectedIcon: Icon(CupertinoIcons.music_albums_fill), label: Text('Library')),
+    Widget body = isDesktop
+        ? Column(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    DesktopFrostedSidebar(
+                      selectedIndex: _selectedIndex,
+                      onTabSelected: _onTabTapped,
+                      onOfflineFolderTapped: _goToOfflineFolder,
+                    ),
+                    Expanded(child: pages[_selectedIndex]),
+                  ],
+                ),
+              ),
+              const DesktopPlayerBar(),
             ],
-          ),
-        if (isDesktop) const VerticalDivider(thickness: 1, width: 1),
-        Expanded(
-          child: Column(
+          )
+        : Column(
             children: [
               Expanded(child: pages[_selectedIndex]),
               const MiniPlayer(),
             ],
-          ),
-        ),
-      ],
-    );
+          );
 
     final bgPath = themeProvider.getBackgroundImageForTab(_selectedIndex);
 
@@ -173,21 +174,61 @@ class _RootScreenState extends State<RootScreen> {
       );
     }
 
+    final isDark = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: bgPath != null ? Colors.transparent : null,
+      backgroundColor: bgPath != null ? Colors.transparent : (isDark ? Colors.black : const Color(0xFFF2F2F7)),
       body: body,
       bottomNavigationBar: isDesktop 
         ? null 
-        : BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: _onTabTapped,
-            backgroundColor: bgPath != null ? Colors.transparent : null,
-            elevation: bgPath != null ? 0 : 8,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), activeIcon: Icon(CupertinoIcons.house_fill), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(CupertinoIcons.search), activeIcon: Icon(CupertinoIcons.search), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(CupertinoIcons.music_albums), activeIcon: Icon(CupertinoIcons.music_albums_fill), label: 'Library'),
-            ],
+        : ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: bgPath != null
+                      ? Colors.transparent
+                      : (isDark
+                          ? const Color(0xFF0D1017).withValues(alpha: 0.90)
+                          : Colors.white.withValues(alpha: 0.74)),
+                  border: Border(
+                    top: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.10)
+                          : Colors.white.withValues(alpha: 0.90),
+                      width: 0.8,
+                    ),
+                  ),
+                ),
+                child: BottomNavigationBar(
+                  currentIndex: _selectedIndex,
+                  onTap: _onTabTapped,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedItemColor: AppTheme.accentColor1,
+                  unselectedItemColor: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                  selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.radio_rounded),
+                      activeIcon: Icon(Icons.radio_rounded),
+                      label: 'Radio',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(CupertinoIcons.search),
+                      activeIcon: Icon(CupertinoIcons.search),
+                      label: 'Search',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(CupertinoIcons.music_albums),
+                      activeIcon: Icon(CupertinoIcons.music_albums_fill),
+                      label: 'Library',
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
     );
   }

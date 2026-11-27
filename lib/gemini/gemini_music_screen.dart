@@ -7,6 +7,7 @@ import '../music_provider.dart';
 import '../song_model.dart';
 import '../ui/mini_player.dart';
 import '../ui/queue_screen.dart';
+import 'gemini_config.dart';
 import 'gemini_music_service.dart';
 import 'models/semantic_song_match.dart';
 import 'models/vibe_playlist.dart';
@@ -28,8 +29,11 @@ class GeminiMusicScreen extends StatefulWidget {
 class _GeminiMusicScreenState extends State<GeminiMusicScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  late final GeminiMusicService _musicService;
+  late GeminiMusicService _musicService;
   final ApiService _apiService = ApiService();
+
+  // Active API Key
+  String _activeApiKey = '';
 
   // Controllers
   final TextEditingController _vibeController = TextEditingController();
@@ -54,9 +58,151 @@ class _GeminiMusicScreenState extends State<GeminiMusicScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _activeApiKey = widget.geminiApiKey;
     _musicService = GeminiMusicService(
-      apiKey: widget.geminiApiKey,
-      defaultModel: 'gemini-flash-lite-latest',
+      apiKey: _activeApiKey,
+      defaultModel: 'gemini-2.0-flash',
+    );
+    _loadSavedApiKey();
+  }
+
+  Future<void> _loadSavedApiKey() async {
+    final key = await GeminiConfig.getApiKey();
+    if (mounted) {
+      setState(() {
+        _activeApiKey = key;
+        _musicService = GeminiMusicService(
+          apiKey: _activeApiKey,
+          defaultModel: 'gemini-2.0-flash',
+        );
+      });
+    }
+  }
+
+  Future<void> _showApiKeyDialog(BuildContext context) async {
+    final textController = TextEditingController(text: _activeApiKey);
+    bool obscure = true;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1E222D) : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8A2387).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.vpn_key_rounded, color: Color(0xFFE94057), size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text('Gemini API Key', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Enter your Google Gemini API key to power AI Vibe Playlists and Semantic Search.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: textController,
+                      obscureText: obscure,
+                      style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                      decoration: InputDecoration(
+                        hintText: 'AIzaSy...',
+                        labelText: 'API Key',
+                        filled: true,
+                        fillColor: isDark ? Colors.black26 : const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 18),
+                          onPressed: () => setDialogState(() => obscure = !obscure),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '• Get a 100% free API key from:\n   https://aistudio.google.com/apikey',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white38 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                if (_activeApiKey.isNotEmpty)
+                  TextButton(
+                    onPressed: () async {
+                      await GeminiConfig.clearApiKey();
+                      await _loadSavedApiKey();
+                      if (mounted) {
+                        setState(() {
+                          _vibeError = null;
+                          _searchError = null;
+                        });
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Custom API key cleared.')),
+                        );
+                      }
+                    },
+                    child: const Text('Reset', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFE94057),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    final newKey = textController.text.trim();
+                    await GeminiConfig.saveApiKey(newKey);
+                    await _loadSavedApiKey();
+                    if (mounted) {
+                      setState(() {
+                        _vibeError = null;
+                        _searchError = null;
+                      });
+                    }
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Gemini API key saved successfully!'),
+                          backgroundColor: Color(0xFF1DB954),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Save Key'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -328,6 +474,15 @@ class _GeminiMusicScreenState extends State<GeminiMusicScreen>
           ],
         ),
         actions: [
+          // API Key Settings Button
+          IconButton(
+            tooltip: 'Gemini API Key',
+            icon: Icon(
+              Icons.vpn_key_rounded,
+              color: _activeApiKey.isNotEmpty ? const Color(0xFF1DB954) : Colors.orangeAccent,
+            ),
+            onPressed: () => _showApiKeyDialog(context),
+          ),
           // Open Queue Screen Button
           IconButton(
             tooltip: 'View Queue',
@@ -1216,10 +1371,22 @@ class _GeminiMusicScreenState extends State<GeminiMusicScreen>
               style: const TextStyle(fontSize: 13, color: Colors.redAccent),
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Try Again'),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: [
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Try Again'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _showApiKeyDialog(context),
+                  icon: const Icon(Icons.vpn_key_rounded, size: 18),
+                  label: const Text('Configure API Key'),
+                ),
+              ],
             ),
           ],
         ),

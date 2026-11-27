@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,17 +33,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    // Close the keyboard
     FocusScope.of(context).unfocus();
 
     setState(() => _userName = name);
 
-    // Save the username
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
 
-    // Preload trending songs & top songs while the user reads the
-    // greeting page. By the time they tap "Let's Go", data is ready.
     if (mounted) {
       final provider = context.read<MusicProvider>();
       provider.userName = name;
@@ -63,7 +61,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
       body: PageView(
         controller: _pageController,
@@ -81,21 +79,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildNamePage() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF1A3A2A),
-            Theme.of(context).scaffoldBackgroundColor,
-            Color(0xFF0A0A0A),
+            Color(0xFF200A18),
+            Color(0xFF0F1420),
+            Colors.black,
           ],
           stops: [0.0, 0.5, 1.0],
         ),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height -
@@ -106,155 +104,153 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 60),
+                  const SizedBox(height: 48),
 
-              // Logo / Icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.accentColor1,
-                      AppTheme.accentColor2,
-                      AppTheme.accentColor1.withValues(alpha: 0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentColor1.withValues(alpha: 0.35),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Icon(Icons.music_note_rounded, color: Colors.black, size: 40),
-              ),
-
-              SizedBox(height: 40),
-
-              // Title
-              Text(
-                'Welcome to',
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                ),
-              ),
-              SizedBox(height: 4),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [AppTheme.accentColor1, AppTheme.accentColor2, Color(0xFF4ADE80)],
-                ).createShader(bounds),
-                child: Text(
-                  'NexTune',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w800,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 48),
-
-              // Subtitle
-              Text(
-                "What should we call you?",
-                style: GoogleFonts.montserrat(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                "Enter your name to personalise your experience",
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  color: const Color(0xFFB3B3B3),
-                ),
-              ),
-
-              SizedBox(height: 28),
-
-              // Name input field
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(
-                    color: AppTheme.accentColor1.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: TextField(
-                  controller: _nameController,
-                  style: GoogleFonts.montserrat(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Your name',
-                    hintStyle: GoogleFonts.montserrat(
-                      color: Theme.of(context).dividerColor.withOpacity(0.3),
-                      fontSize: 18,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.only(left: 16, right: 8),
-                      child: Icon(Icons.person_outline_rounded, color: AppTheme.accentColor1, size: 24),
-                    ),
-                  ),
-                  textCapitalization: TextCapitalization.words,
-                  onSubmitted: (_) => _goToNextPage(),
-                ),
-              ),
-
-              SizedBox(height: 32),
-
-              // Arrow button
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: _goToNextPage,
-                  child: Container(
-                    width: 64,
-                    height: 64,
+                  // Glowing App Icon
+                  Container(
+                    width: 76,
+                    height: 76,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.accentColor1, AppTheme.accentColor2],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      gradient: AppTheme.accentGradient,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.accentColor1.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 6),
+                          color: AppTheme.accentColor1.withValues(alpha: 0.45),
+                          blurRadius: 30,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 30),
+                    child: const Center(
+                      child: Icon(CupertinoIcons.music_note_2, color: Colors.white, size: 38),
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 36),
+
+                  Text(
+                    'Welcome to',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFFFA2D48), Color(0xFFFF375F), Color(0xFF5E5CE6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                    child: Text(
+                      'Pattufy',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 44,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -1.2,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  Text(
+                    "What should we call you?",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Enter your name to personalize your radio and playback mix",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      color: Colors.white.withValues(alpha: 0.55),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Name input field with frosted glass effect
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: Colors.white.withValues(alpha: 0.08),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: _nameController,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Your name',
+                            hintStyle: GoogleFonts.plusJakartaSans(
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontSize: 17,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.only(left: 16, right: 10),
+                              child: Icon(CupertinoIcons.person_fill, color: AppTheme.accentColor1, size: 22),
+                            ),
+                          ),
+                          textCapitalization: TextCapitalization.words,
+                          onSubmitted: (_) => _goToNextPage(),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Next Button
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: _goToNextPage,
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: AppTheme.accentGradient,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentColor1.withValues(alpha: 0.45),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 26),
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(flex: 3),
+
+                  _buildPageIndicator(),
+                  const SizedBox(height: 28),
+                ],
               ),
-
-              const Spacer(flex: 3),
-
-              // Page indicator
-              _buildPageIndicator(),
-              SizedBox(height: 32),
-            ],
-          ),
             ),
           ),
         ),
@@ -266,22 +262,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildGreetingPage() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1DB954),
-            Color(0xFF14843C),
-            Color(0xFF0D1B12),
-            Theme.of(context).scaffoldBackgroundColor,
+            Color(0xFF2E0D1B),
+            Color(0xFF131726),
+            Color(0xFF07090F),
+            Colors.black,
           ],
-          stops: [0.0, 0.25, 0.55, 1.0],
+          stops: [0.0, 0.35, 0.70, 1.0],
         ),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height -
@@ -292,130 +288,146 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              const Spacer(flex: 2),
+                  const SizedBox(height: 24),
 
-              // Greeting
-              Text(
-                'Hey,',
-                style: GoogleFonts.montserrat(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '$_userName! 👋',
-                style: GoogleFonts.montserrat(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-
-              SizedBox(height: 32),
-
-              // Introduction
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.black.withValues(alpha: 0.35),
-                  border: Border.all(
-                    color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.08) ?? Colors.transparent,
+                  Text(
+                    'Hey,',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppTheme.accentColor1.withValues(alpha: 0.2),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_userName! ✨',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Introduction Card with Frosted Glass
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          color: Colors.white.withValues(alpha: 0.08),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
+                            width: 1,
                           ),
-                          child: Icon(Icons.waving_hand_rounded, color: AppTheme.accentColor1, size: 20),
                         ),
-                        SizedBox(width: 12),
-                        Text(
-                          'From Arjun',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.accentColor1,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppTheme.accentColor1.withValues(alpha: 0.25),
+                                  ),
+                                  child: const Icon(CupertinoIcons.sparkles, color: AppTheme.accentColor1, size: 18),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Pattufy Music Experience',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.accentColor1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              "Welcome to your personal high-fidelity music space. "
+                              "Stream endless songs with lossless audio, generate AI vibe playlists with Gemini, "
+                              "download offline tracks, and experience Apple Music-grade design.",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13.5,
+                                height: 1.55,
+                                color: Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Feature Highlights
+                  _buildFeatureRow(CupertinoIcons.search, 'Search & stream millions of songs with Hi-Res Lossless'),
+                  const SizedBox(height: 14),
+                  _buildFeatureRow(CupertinoIcons.sparkles, 'Gemini AI intelligent vibe playlists & semantic search'),
+                  const SizedBox(height: 14),
+                  _buildFeatureRow(CupertinoIcons.arrow_down_circle_fill, 'Offline storage for listening on the go'),
+                  const SizedBox(height: 14),
+                  _buildFeatureRow(CupertinoIcons.chart_bar_alt_fill, 'Real-time Wrapped listening statistics'),
+
+                  const Spacer(flex: 2),
+
+                  // Get Started button
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      gradient: AppTheme.accentGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentColor1.withValues(alpha: 0.45),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      "I'm Arjun, and I built NexTune just for music lovers like you. "
-                      "This is your personal music space — stream songs, save your favorites with a single tap, "
-                      "download tracks for offline playback, and track your listening habits with your Music Wrapped dashboard.",
-                      style: GoogleFonts.montserrat(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.85) ?? Colors.transparent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 24),
-
-              // Feature highlights
-              _buildFeatureRow(Icons.search_rounded, 'Search & stream millions of songs'),
-              SizedBox(height: 14),
-              _buildFeatureRow(Icons.download_rounded, 'Download songs for offline playback'),
-              SizedBox(height: 14),
-              _buildFeatureRow(Icons.bar_chart_rounded, 'Track stats with Music Wrapped dashboard'),
-              SizedBox(height: 14),
-              _buildFeatureRow(Icons.favorite_rounded, 'Save favorites & upload local music'),
-
-              const Spacer(flex: 2),
-
-              // Get Started button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _finishOnboarding,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).textTheme.bodyLarge?.color,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 8,
-                    shadowColor: Colors.black54,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Let's Go, $_userName!",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                    child: ElevatedButton(
+                      onPressed: _finishOnboarding,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 22),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Let's Go, $_userName!",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 20),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 18),
+
+                  _buildPageIndicator(),
+                  const SizedBox(height: 28),
+                ],
               ),
-
-              SizedBox(height: 16),
-
-              // Page indicator
-              _buildPageIndicator(),
-              SizedBox(height: 32),
-            ],
-          ),
             ),
           ),
         ),
@@ -427,22 +439,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: AppTheme.accentColor1.withValues(alpha: 0.15),
+            color: AppTheme.accentColor1.withValues(alpha: 0.16),
+            border: Border.all(
+              color: AppTheme.accentColor1.withValues(alpha: 0.25),
+              width: 0.8,
+            ),
           ),
-          child: Icon(icon, color: AppTheme.accentColor1, size: 20),
+          child: Icon(icon, color: AppTheme.accentColor1, size: 18),
         ),
-        SizedBox(width: 14),
+        const SizedBox(width: 14),
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13.5,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.9) ?? Colors.transparent,
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
         ),
@@ -459,21 +475,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4),
           width: isActive ? 28 : 8,
-          height: 8,
+          height: 7,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            color: isActive ? AppTheme.accentColor1 : Theme.of(context).dividerColor.withOpacity(0.24),
+            color: isActive ? AppTheme.accentColor1 : Colors.white.withValues(alpha: 0.2),
           ),
         );
       }),
     );
   }
 }
-
-
-
-
-
-
-
-

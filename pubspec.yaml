@@ -53,6 +53,7 @@ dependencies:
   video_player: ^2.14.0
   fc_native_video_thumbnail: ^3.0.1
   google_generative_ai: ^0.4.7
+  youtube_player_flutter: ^10.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,6 +1,6 @@
 {
-    "name": "music_app",
-    "short_name": "music_app",
+    "name": "Pattufy",
+    "short_name": "Pattufy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

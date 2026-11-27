@@ -22,7 +22,7 @@ class OverlayIslandWidget extends StatefulWidget {
 }
 
 class _OverlayIslandWidgetState extends State<OverlayIslandWidget> with SingleTickerProviderStateMixin {
-  String _title = "NexTune Music";
+  String _title = "Pattufy";
   String _imageUrl = "";
   bool _isPlaying = false;
   late AnimationController _pulseController;

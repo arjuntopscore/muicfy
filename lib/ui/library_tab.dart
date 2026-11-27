@@ -1,16 +1,18 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../music_provider.dart';
+import '../theme_provider.dart';
 import 'theme.dart';
-import 'album_art.dart';
 import 'favorites_screen.dart';
 import 'stats_screen.dart';
 import 'playlist_screen.dart';
 import 'browse_library_screen.dart';
 import '../spotify_service.dart';
 import '../api_service.dart';
-import '../song_model.dart';/// Data class for predefined library categories
+import '../song_model.dart';
+
+/// Data class for predefined library categories
 class _LibraryCategory {
   final String title;
   final String query;
@@ -277,11 +279,19 @@ class LibraryTab extends StatelessWidget {
     }
 
     // Show a dialog to let the user pick a playlist
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF282828),
-        title: Text('Select a Playlist to Import', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+        backgroundColor: isDark ? const Color(0xFF141926) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text(
+          'Select a Playlist to Import',
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -290,7 +300,13 @@ class LibraryTab extends StatelessWidget {
             itemBuilder: (context, index) {
               final pl = playlists.elementAt(index);
               return ListTile(
-                title: Text(pl.name ?? 'Unknown', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+                title: Text(
+                  pl.name ?? 'Unknown',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 onTap: () async {
                   Navigator.pop(ctx);
                   _processSpotifyPlaylist(context, provider, spotifyService, pl.id!, pl.name ?? 'Imported Playlist');
@@ -305,7 +321,12 @@ class LibraryTab extends StatelessWidget {
 
   void _processSpotifyPlaylist(BuildContext context, MusicProvider provider, SpotifyService spotifyService, String spotifyPlaylistId, String playlistName) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Importing "$playlistName"... This might take a minute.'), duration: const Duration(seconds: 5)),
+      SnackBar(
+        content: Text('Importing "$playlistName"... This might take a minute.'),
+        backgroundColor: const Color(0xFF141926),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+      ),
     );
 
     final tracks = await spotifyService.getPlaylistTracks(spotifyPlaylistId);
@@ -314,7 +335,7 @@ class LibraryTab extends StatelessWidget {
     final apiService = ApiService();
     List<Song> importedSongs = [];
     
-    for (var track in tracks.take(20)) { // Limit to 20 to avoid rate limits
+    for (var track in tracks.take(20)) {
       final artistName = track.artists?.isNotEmpty == true ? track.artists!.first.name : '';
       final query = '${track.name} $artistName';
       final results = await apiService.searchSongs(query, limit: 1);
@@ -327,35 +348,52 @@ class LibraryTab extends StatelessWidget {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully imported ${importedSongs.length} songs into "$playlistName"')),
+        SnackBar(
+          content: Text('Successfully imported ${importedSongs.length} songs into "$playlistName"'),
+          backgroundColor: const Color(0xFF141926),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
 
   void _showCreatePlaylistDialog(BuildContext context, MusicProvider provider) {
     final controller = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF282828),
-        title: Text('Create Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+        backgroundColor: isDark ? const Color(0xFF141926) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text(
+          'Create Playlist',
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1C1C1E)),
           decoration: InputDecoration(
             hintText: 'Playlist name',
-            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.38)),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.24) ?? Colors.grey)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.accentColor1)),
+            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+            filled: true,
+            fillColor: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.70))),
+            child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
@@ -364,13 +402,18 @@ class LibraryTab extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Created "$name"'),
-                    backgroundColor: const Color(0xFF282828),
+                    backgroundColor: const Color(0xFF141926),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
             },
-            child: Text('Create', style: TextStyle(color: AppTheme.accentColor1, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentColor1,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+            child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -380,100 +423,135 @@ class LibraryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MusicProvider>();
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final textColor = isDark ? Colors.white : const Color(0xFF1C1C1E);
+    final subtextColor = isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF6E6E73);
 
-    return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          // Header
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black : const Color(0xFFEDF2F7),
+        gradient: isDark
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Color(0xFFE2EAF8),
+                  Color(0xFFF1EEFB),
+                  Color(0xFFEDF2F7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+      ),
+      child: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Library',
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        letterSpacing: -0.6,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            isDark ? CupertinoIcons.sun_max_fill : CupertinoIcons.moon_fill,
+                            color: isDark ? const Color(0xFFFFD60A) : const Color(0xFF5856D6),
+                            size: 22,
+                          ),
+                          tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                          onPressed: () {
+                            context.read<ThemeProvider>().toggleTheme();
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(CupertinoIcons.plus_circle, color: AppTheme.accentColor1, size: 26),
+                          tooltip: 'Create Playlist',
+                          onPressed: () => _showCreatePlaylistDialog(context, provider),
+                        ),
+                        IconButton(
+                          icon: Icon(CupertinoIcons.chart_bar_alt_fill, color: AppTheme.accentColor1, size: 24),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const StatsScreen()),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Quick Action Cards (Favorites, Offline, Spotify)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 64, 16, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
                 children: [
-                  Text('Your Library', style: Theme.of(context).textTheme.displaySmall),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.add, color: AppTheme.accentColor1, size: 30),
-                        tooltip: 'Create Playlist',
-                        onPressed: () => _showCreatePlaylistDialog(context, provider),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.bar_chart, color: AppTheme.accentColor1, size: 30),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => StatsScreen()),
-                          );
-                        },
-                      ),
-                    ],
+                  _buildQuickActionCard(
+                    context,
+                    title: 'Favorites',
+                    subtitle: '${provider.favorites.length} liked tracks',
+                    icon: CupertinoIcons.heart_fill,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFA2D48), Color(0xFFFF5E3A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    isDark: isDark,
+                    textColor: textColor,
+                    subtextColor: subtextColor,
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()));
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildQuickActionCard(
+                    context,
+                    title: 'Offline Storage',
+                    subtitle: '${provider.localLibrary.length} downloaded tracks',
+                    icon: CupertinoIcons.folder_fill,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0A84FF), Color(0xFF5E5CE6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    isDark: isDark,
+                    textColor: textColor,
+                    subtextColor: subtextColor,
+                    onTap: onOfflineFolderTapped,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildQuickActionCard(
+                    context,
+                    title: 'Import from Spotify',
+                    subtitle: 'Sync external playlists',
+                    icon: CupertinoIcons.arrow_down_to_line,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1DB954), Color(0xFF14843C)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    isDark: isDark,
+                    textColor: textColor,
+                    subtextColor: subtextColor,
+                    onTap: () => _importFromSpotify(context, provider),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // Favorites tile
-          SliverToBoxAdapter(
-            child: ListTile(
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()));
-              },
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: Container(
-                width: 50, height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF7B2FF7), Color(0xFFE91E63)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Icon(Icons.favorite, color: Theme.of(context).textTheme.bodyLarge?.color),
-              ),
-              title: Text('Favorites', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('${provider.favorites.length} liked songs'),
-              trailing: Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54)),
-            ),
-          ),
-
-          // Offline folder tile
-          SliverToBoxAdapter(
-            child: ListTile(
-              onTap: onOfflineFolderTapped,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: Container(
-                width: 50, height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).cardColor,
-                ),
-                child: Icon(Icons.library_music, color: AppTheme.accentColor1),
-              ),
-              title: Text('Offline Local Folder', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('${provider.localLibrary.length} saved songs'),
-              trailing: Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54)),
-            ),
-          ),
-
-          // Spotify Import tile
-          SliverToBoxAdapter(
-            child: ListTile(
-              onTap: () => _importFromSpotify(context, provider),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: Container(
-                width: 50, height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: const Color(0xFF1DB954), // Spotify Green
-                ),
-                child: Icon(Icons.download, color: Colors.black),
-              ),
-              title: Text('Import from Spotify', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Connect your account'),
-              trailing: Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54)),
             ),
           ),
 
@@ -481,8 +559,11 @@ class LibraryTab extends StatelessWidget {
           if (provider.userPlaylists.isNotEmpty) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-                child: Text('Your Playlists', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+                child: Text(
+                  'Your Playlists',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: textColor, letterSpacing: -0.3),
+                ),
               ),
             ),
             SliverList(
@@ -493,57 +574,96 @@ class LibraryTab extends StatelessWidget {
                     key: ValueKey(playlist.id),
                     direction: DismissDirection.endToStart,
                     background: Container(
-                      color: Colors.redAccent,
+                      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF453A),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 24),
-                      child: Icon(Icons.delete, color: Theme.of(context).textTheme.bodyLarge?.color),
+                      child: const Icon(CupertinoIcons.trash, color: Colors.white),
                     ),
                     confirmDismiss: (direction) async {
                       return await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          backgroundColor: const Color(0xFF282828),
-                          title: Text('Delete Playlist', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
-                          content: Text('Delete "${playlist.name}"?', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.70))),
+                          backgroundColor: isDark ? const Color(0xFF141926) : Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                          title: Text(
+                            'Delete Playlist',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          content: Text(
+                            'Are you sure you want to delete "${playlist.name}"?',
+                            style: TextStyle(color: subtextColor),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: Text('Cancel', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.70))),
+                              child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
                             ),
-                            TextButton(
+                            ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              child: Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF453A),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                              ),
+                              child: const Text('Delete'),
                             ),
                           ],
                         ),
                       ) ?? false;
                     },
                     onDismissed: (_) => provider.deletePlaylist(playlist.id),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => PlaylistScreen(playlistId: playlist.id)),
-                        );
-                      },
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Container(
-                        width: 50, height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.accentColor1.withValues(alpha: 0.6),
-                              AppTheme.accentColor1.withValues(alpha: 0.2),
-                            ],
-                            begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.70),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => PlaylistScreen(playlistId: playlist.id)),
+                          );
+                        },
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                        leading: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.accentColor1.withValues(alpha: 0.8),
+                                const Color(0xFF9013FE).withValues(alpha: 0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(CupertinoIcons.music_albums_fill, color: Colors.white, size: 24),
                           ),
                         ),
-                        child: Icon(Icons.queue_music, color: Theme.of(context).textTheme.bodyLarge?.color),
+                        title: Text(
+                          playlist.name,
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: textColor),
+                        ),
+                        subtitle: Text(
+                          '${playlist.songs.length} song${playlist.songs.length == 1 ? '' : 's'}',
+                          style: TextStyle(color: subtextColor, fontSize: 12),
+                        ),
+                        trailing: Icon(CupertinoIcons.chevron_forward, color: subtextColor.withValues(alpha: 0.6), size: 16),
                       ),
-                      title: Text(playlist.name, style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${playlist.songs.length} songs'),
-                      trailing: Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54)),
                     ),
                   );
                 },
@@ -560,23 +680,45 @@ class LibraryTab extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => _showCreatePlaylistDialog(context, provider),
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.12) ?? Colors.grey),
+                      color: isDark ? const Color(0xFF141926) : Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.add_circle_outline, color: AppTheme.accentColor1, size: 32),
-                        SizedBox(width: 16),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.accentColor1.withValues(alpha: 0.15),
+                          ),
+                          child: const Icon(CupertinoIcons.plus, color: AppTheme.accentColor1, size: 24),
+                        ),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Create your first playlist', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              SizedBox(height: 4),
-                              Text('Organize your music your way', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54), fontSize: 13)),
+                              Text(
+                                'Create your first playlist',
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5, color: textColor),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Organize your music your way',
+                                style: TextStyle(color: subtextColor, fontSize: 13),
+                              ),
                             ],
                           ),
                         ),
@@ -594,9 +736,9 @@ class LibraryTab extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Browse Libraries', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('Explore curated collections by language and mood', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.54), fontSize: 13)),
+                  Text('Browse Libraries', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: textColor, letterSpacing: -0.3)),
+                  const SizedBox(height: 4),
+                  Text('Explore curated collections by language and mood', style: TextStyle(color: subtextColor, fontSize: 13)),
                 ],
               ),
             ),
@@ -623,8 +765,91 @@ class LibraryTab extends StatelessWidget {
           ),
 
           // Bottom padding
-          SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
+      ),
+    ),
+    );
+  }
+
+  Widget _buildQuickActionCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Gradient gradient,
+    required bool isDark,
+    required Color textColor,
+    required Color subtextColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF141926) : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: gradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                      fontSize: 15.5,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: subtextColor,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(CupertinoIcons.chevron_forward, color: subtextColor.withValues(alpha: 0.5), size: 18),
+          ],
+        ),
       ),
     );
   }
@@ -653,16 +878,41 @@ class _LibraryCard extends StatelessWidget {
         );
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            // Base background
-            Positioned.fill(
-              child: category.imageUrl != null
-                  ? Image.network(
-                      category.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Base background
+              Positioned.fill(
+                child: category.imageUrl != null
+                    ? Image.network(
+                        category.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: category.gradientColors,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: category.gradientColors,
@@ -671,56 +921,60 @@ class _LibraryCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: category.gradientColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                    ),
-            ),
-            
-            // Blur and dark dimming overlay (no opaque gradient, just simple tint)
-            if (category.imageUrl != null)
+              ),
+              
+              // Dark dimming overlay to make text pop
               Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.3), // Lightly dim the image to make text readable
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withValues(alpha: 0.65),
+                        Colors.black.withValues(alpha: 0.35),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
                   ),
                 ),
               ),
 
-            // Content
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(category.icon, color: Theme.of(context).textTheme.bodyLarge?.color, size: 24),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        category.title,
-                        style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
+              // Content
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withValues(alpha: 0.3),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        child: Icon(category.icon, color: Colors.white, size: 20),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          category.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            height: 1.25,
+                            letterSpacing: -0.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
