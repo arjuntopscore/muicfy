@@ -1,119 +1,168 @@
+<div align="center">
+
+<picture>
+  <img src="assets/readme_banner.svg" alt="Pattufy — your sound, your world" width="100%">
+</picture>
+
 # 🎵 Pattufy
 
-<p align="center">
-  <img src="assets/app_icon.png" alt="Pattufy Logo" width="160" style="border-radius: 32px;" />
-</p>
+**A premium cross-platform music experience built with Flutter**
 
-<p align="center">
-  <b>Next-Generation Immersive Audio & Video Music Experience</b>
-</p>
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
+[![Platform](https://img.shields.io/badge/Android%20%7C%20iOS%20%7C%20Desktop-22C55E?style=for-the-badge)](#supported-platforms)
+[![AI](https://img.shields.io/badge/Powered%20by-Gemini-8E75FF?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 
----
+[![Stars](https://img.shields.io/github/stars/arjuntopscore/muicfy?style=social)](https://github.com/arjuntopscore/muicfy/stargazers)
+[![Issues](https://img.shields.io/github/issues/arjuntopscore/muicfy)](https://github.com/arjuntopscore/muicfy/issues)
 
-**Pattufy** is a sleek, feature-rich Flutter music player application designed to provide an immersive, modern audio and visual experience. Built with an Apple Music-inspired glassmorphic dark theme, it offers seamless playback, 1080p looping video canvases, Gemini AI music discovery, synchronized lyrics, secure private vaults, and cross-platform desktop/mobile support.
+</div>
 
----
+<br>
 
-## ✨ Features
+Pattufy turns every listening session into an immersive experience — with high-fidelity playback, full-screen video canvases, AI-curated discovery, synchronized lyrics, private media, and a polished glassmorphic interface.
 
-### 🎬 1080p Full-HD Video Canvas Mode
-- **Spotify Canvas Experience**: Enjoy vertical, full-bleed 1080p looping video clips while streaming music.
-- **Smart Chorus Extraction**: Automatically detects and caches high-definition video loops (~10 seconds) seamlessly synced to audio.
-- **Flicker-Free Transitions**: Instant canvas restoration across player minimize and reopen navigation with zero transition flash or UI lag.
-- **Flexible Playback**: Toggle between dynamic video canvas and high-resolution album art manually or let auto-reveal activate after 10 seconds.
+<div align="center">
 
-### 🤖 Gemini AI Music Discovery
-- **Natural Language Vibe Search**: Describe your mood, activity, or aesthetic (e.g., *"rainy night coding beats"* or *"energetic gym motivation"*) to get instant AI-curated playlists.
-- **Semantic Song Matching**: Powered by Google Gemini AI to analyze catalog metadata, acoustic vibes, and musical themes.
+## ✨ The Experience
 
-### 🎧 High-Fidelity Audio Engine
-- **Seamless Playback**: Built on `just_audio` and `audio_service` with gapless playback and system notification controls.
-- **Lock-Screen & Background Controls**: Full OS-level media integration with live seekable progress, album art, and transport buttons.
-- **Dynamic Sleep Timer**: Set timed auto-shutdown with custom presets (15m, 30m, 45m, 60m).
+| | | |
+|:---:|:---:|:---:|
+| **🎬 Video Canvas**<br>Full-screen looping music visuals | **🤖 Gemini AI**<br>Natural-language vibe discovery | **🎧 Spatial Listening**<br>Gapless audio and background controls |
+| **📜 Live Lyrics**<br>Synced, scrolling, interactive | **🚗 Car Mode**<br>Large controls for safe driving | **🔒 Private Vault**<br>PIN-protected personal media |
+| **🍎 Glassmorphic UI**<br>Fluid Apple Music-inspired design | **📊 Listening Stats**<br>History, trends, and favorites | **🎥 Music Videos**<br>One-tap YouTube integration |
 
-### 📜 Real-Time Synchronized Lyrics
-- **Live Scrolling Lyrics**: Time-synced lyrics with active line highlighting and smooth auto-scrolling.
-- **Interactive Sheet**: Tap anywhere to expand or dismiss lyrics without interrupting playback.
+</div>
 
-### 🚗 Distraction-Free Car Mode
-- **Drive Safely**: Oversized tactile buttons, large font sizing, and high-contrast visuals designed for safe and easy in-car control.
-- **Minimalist Controls**: Quick access to Play/Pause, Next/Previous, Shuffle, Repeat, and Favorites.
+<br>
 
-### 🔒 Cyber Vault & Private Media
-- **Secure PIN & Stealth Mode**: Protect personal photos and audio collections behind a secure PIN-protected vault.
-- **Encrypted Photo Viewer**: Private gallery viewer with interactive pinch-to-zoom, collection management, and stealth exit gestures.
+<details>
+<summary><strong>Explore every feature</strong></summary>
 
-### 🍎 Premium Glassmorphism UI/UX
-- **Dynamic Backdrop Blur**: Multi-layer real-time Gaussian blurs with adaptive dark-mode palette styling.
-- **Apple Music-Style Sheets**: Modern bottom sheets for queue management, song actions, playlist selection, and artist details.
-- **Animated Audio Waves**: Responsive equalizer pulse bars indicating live playback state in the mini-player.
-- **Desktop & Mobile Responsive**: Optimized for phones, tablets, and desktop workstations with collapsible sidebar navigation and full desktop player bar.
+### 🎬 Immersive video canvas
+- 1080p looping vertical music visuals
+- Smart 10-second chorus loops with flicker-free transitions
+- Switch instantly between canvas mode and high-resolution artwork
 
-### 🎥 Music Video Integration
-- **Watch Music Videos**: Instant one-tap video search to watch the full official music video directly within the app.
-- **Smart Stream Extraction**: High-performance streaming powered by `youtube_explode_dart`.
+### 🤖 AI-powered music discovery
+- Describe a mood, scene, or activity in natural language
+- Gemini matches your vibe against the music catalog
+- Discover curated playlists and semantically related songs
 
-### 📊 Stats & History Analytics
-- **Listening Insights**: Track total listening time, favorite genres, top tracks, and daily listening trends.
-- **Recent History**: Keep tabs on recently played songs and easily jump back into previous sessions.
+### 🎧 Premium playback
+- Gapless playback powered by `just_audio`
+- Lock-screen, notification, and background transport controls
+- Sleep timer presets for 15, 30, 45, and 60 minutes
 
-### 🗂️ Playlists & Offline Library
-- **Custom Playlists**: Create, reorder, rename, and manage custom playlists.
-- **Offline Folders**: Direct device storage scanner to play local MP3, M4A, FLAC, and WAV audio offline.
+### 📜 Lyrics, safety, and privacy
+- Real-time synchronized lyrics with active-line highlighting
+- Oversized, high-contrast controls in car mode
+- PIN-protected vault for private audio and photos
+
+### 🗂️ Your library
+- Custom playlists with reorder and rename support
+- Offline folders for MP3, M4A, FLAC, and WAV files
+- Recent history and detailed listening analytics
+
+</details>
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Flutter SDK**: `^3.12.2` or later
-- **Dart SDK**: `^3.0.0`
-- **Supported Platforms**: Android, iOS, Windows, macOS, Linux, Web
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install)
+- Dart SDK as declared in `pubspec.yaml`
+- A device or emulator for your target platform
+
+### Supported platforms
+
+| Platform | Status |
+|:---:|:---:|
+| Android | ✅ |
+| iOS | ✅ |
+| Windows | ✅ |
+| macOS | ✅ |
+| Linux | ✅ |
+| Web | ✅ |
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/arjuntopscore/muicfy.git
-   cd muicfy
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/arjuntopscore/muicfy.git
+cd muicfy
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+# Get dependencies
+flutter pub get
 
-3. **Configure Gemini API (Optional for AI features)**
-   - Obtain an API key from [Google AI Studio](https://aistudio.google.com/).
-   - Add your key in `lib/gemini/gemini_config.dart` or via environment variables.
+# Run on a connected device or emulator
+flutter run
+```
 
-4. **Run the app**
-   ```bash
-   flutter run
-   ```
+### Configure Gemini AI
+
+Gemini is optional. Supply a key with a compile-time dart-define:
+
+```bash
+flutter run --dart-define=GEMINI_API_KEY=your_api_key
+```
+
+For a Windows build, PowerShell supports the same format:
+
+```powershell
+flutter run --dart-define=GEMINI_API_KEY=$env:GEMINI_API_KEY
+```
+
+The app can also save a custom key through its in-app Gemini settings.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## 🏗️ Tech Stack
 
-| Layer | Technologies |
+| Area | Technology |
 |---|---|
-| **Framework** | Flutter (Dart) |
-| **State Management** | `provider` for clean, decoupled reactive state handling |
-| **Audio Playback** | `just_audio`, `audio_service`, `audio_session` |
-| **Video & Canvas** | `video_player`, `youtube_explode_dart` |
-| **AI Integration** | `google_generative_ai` (Gemini Flash & Pro) |
-| **Local Storage** | `shared_preferences`, `sqflite`, `path_provider` |
-| **UI Components** | Custom Apple Music glassmorphism, Cupertino & Material 3 design tokens |
+| UI framework | Flutter and Dart |
+| State management | `provider` |
+| Audio | `just_audio`, `audio_service`, `audio_session` |
+| Video | `video_player`, `youtube_explode_dart`, `youtube_player_flutter` |
+| AI | `google_generative_ai` |
+| Storage | `shared_preferences`, `path_provider`, platform file APIs |
+| Visuals | Flutter glassmorphism, Material 3, and Cupertino components |
+
+---
+
+## 🧭 Project Structure
+
+```text
+lib/
+├── gemini/          # Gemini configuration, services, and models
+├── ui/              # Screens, players, sheets, library, and widgets
+├── music_provider.dart
+├── custom_audio_handler.dart
+└── main.dart
+assets/
+└── app_icon.png
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/arjuntopscore/muicfy/issues).
+Issues and pull requests are welcome.
 
----
+1. Fork the repository
+2. Create a focused feature branch
+3. Commit your changes
+4. Open a pull request
 
-## 📄 License
+Found a bug or have an idea? Visit the [issue tracker](https://github.com/arjuntopscore/muicfy/issues).
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<div align="center">
+
+### Enjoying Pattufy?
+
+**Give the repository a ⭐ — it helps the project grow!**
+
+</div>
